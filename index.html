@@ -754,7 +754,7 @@
                             if (isInspection) {
                                 if (unitData.qcIsUnderReview) {
                                     styleClasses = 'bg-yellow-400 text-black';
-                                    cellText = 'QC ตรวจสอบ';
+                                    cellText = unitData.qcIsQcCm ? 'QC-CM ตรวจสอบ' : 'QC ตรวจสอบ';
                                 } else if (unitData.cmIsUnderReview) {
                                     styleClasses = 'bg-yellow-400 text-black';
                                     cellText = 'CM ตรวจสอบ';
@@ -2328,4 +2328,5 @@
     </script>
 </body>
 </html>
+
 
