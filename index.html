@@ -35,7 +35,8 @@
             border-radius: 0;
         }
         .is-line-capturing #controls-area,
-        .is-line-capturing #action-buttons-container {
+        .is-line-capturing #action-buttons-container,
+        .is-line-capturing #home-btn-container {
             display: none;
         }
 
@@ -71,9 +72,9 @@
             transition: all 0.2s ease-in-out;
         }
         .view-toggle-btn.active {
-            background-color: #f59e0b;
-            color: #78350f;
-            font-weight: 700;
+            background-color: #ffffff; /* white */
+            color: #4338ca; /* indigo-700 */
+            font-weight: 600;
             box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
         }
         
@@ -199,177 +200,275 @@
             color: #374151;
             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
         }
+
+        /* UI/UX IMPROVEMENTS */
+        @keyframes flash {
+            0% { background-color: rgba(99, 102, 241, 0.5); } /* indigo-500 with opacity */
+            100% { background-color: transparent; }
+        }
+        .cell-updated {
+            animation: flash 1.5s ease-out;
+        }
+        .action-btn {
+             @apply transform transition-transform duration-150 hover:scale-105 active:scale-95;
+        }
+
+        /* SPLASH SCREEN STYLES */
+        #splash-screen {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .splash-card {
+            transition: all 0.2s ease-in-out;
+        }
+        .splash-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .splash-nav-card {
+            transition: all 0.3s ease-in-out;
+            background-size: 200% 100%;
+        }
+        .splash-nav-card:hover {
+             transform: translateY(-5px);
+             box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+             background-position: right center;
+        }
+        .splash-nav-card h3 {
+             text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body class="p-2 md:p-4">
 
-    <div id="capture-area" class="max-w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
-        <!-- Header -->
-        <header class="bg-gradient-to-br from-amber-800 to-amber-950 text-white p-4 flex justify-between items-center">
-            <div class="w-1/4">
-                <h1 class="text-xl md:text-2xl font-bold tracking-wide text-shadow-md">Vay Chinnakhet</h1>
-            </div>
-            <div class="w-1/2 text-center">
-                <p class="text-xl md:text-4xl font-bold tracking-wider opacity-90 text-shadow-md" id="status-title">STATUS</p>
-            </div>
-            <div class="w-1/4 text-right">
-                 <p class="text-sm md:text-base">UPDATE: <span id="update-date"></span></p>
-            </div>
-        </header>
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-5xl mx-auto text-center">
+            <h1 class="text-4xl md:text-6xl font-extrabold text-slate-800 mb-2">Vay Chinnakhet</h1>
+            <p class="text-lg md:text-xl text-slate-600 mb-8 md:mb-12">ระบบติดตามความคืบหน้าโครงการ</p>
 
-        <!-- Main Content -->
-        <main class="p-2 md:p-4 overflow-x-auto">
-              <table id="main-table" class="w-full border-collapse text-center text-xs md:text-sm">
-                  <!-- JS Generated Content -->
-              </table>
-
-              <!-- Legend -->
-            <div id="legend" class="mt-4 p-4 bg-slate-100 rounded-lg flex flex-wrap items-center gap-4 text-xs md:text-sm">
-                <!-- JS Generated Content -->
+            <!-- Summary Dashboard -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 md:mb-12">
+                <!-- Overall Progress -->
+                <div class="splash-card bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-white">
+                    <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">ภาพรวมโครงการ</h2>
+                     <div class="infographic-progress-circle w-32 h-32 rounded-full flex items-center justify-center mx-auto" style="--progress: 0%">
+                        <span id="splash-overall-progress" class="text-3xl font-bold text-gray-800">0%</span>
+                    </div>
+                </div>
+                <!-- Completed Units -->
+                <div class="splash-card bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-white">
+                    <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">ห้องพักที่เสร็จสมบูรณ์</h2>
+                    <div class="flex items-center justify-center h-32">
+                         <p id="splash-completed-units" class="text-5xl font-extrabold text-emerald-600">0 / 0</p>
+                    </div>
+                </div>
+                <!-- QC Pass Rate -->
+                <div class="splash-card bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-white">
+                    <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">QC PASS RATE</h2>
+                     <div class="flex items-center justify-center h-32">
+                        <p id="splash-qc-pass-rate" class="text-5xl font-extrabold text-indigo-600">0%</p>
+                    </div>
+                </div>
             </div>
-        </main>
-    </div>
-    
-    <!-- Controls Area -->
-    <div id="controls-area" class="max-w-full mx-auto p-4 mt-4 bg-white rounded-lg shadow-lg flex flex-wrap items-center gap-x-6 gap-y-4">
-        <div class="flex items-center gap-2">
-            <span class="font-bold text-slate-600">มุมมอง:</span>
-            <div id="view-toggle" class="bg-slate-200 p-1 rounded-full text-slate-800 text-xs md:text-sm font-semibold flex">
-                <button id="view-residential-btn" class="view-toggle-btn px-3 py-1 rounded-full active">ห้องพัก</button>
-                <button id="view-common-btn" class="view-toggle-btn px-3 py-1 rounded-full">ส่วนกลาง</button>
-            </div>
-        </div>
 
-        <div id="dropdown-container" class="flex items-center gap-2">
-            <span class="font-bold text-slate-600">เลือกงาน:</span>
-            <select id="task-category" class="bg-slate-50 border border-slate-300 rounded-md px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
-                <!-- JS Generated Content -->
-            </select>
-        </div>
-
-        <div id="tiling-view-toggle" class="flex items-center gap-2 hidden">
-             <span class="font-bold text-slate-600">รูปแบบ:</span>
-            <div class="bg-slate-200 p-1 rounded-full text-slate-800 text-xs md:text-sm font-semibold flex">
-                <button id="view-tiling-summary-btn" class="view-toggle-btn px-3 py-1 rounded-full active">สรุป</button>
-                <button id="view-tiling-detailed-btn" class="view-toggle-btn px-3 py-1 rounded-full">ละเอียด</button>
+            <!-- Navigation -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div id="nav-residential" class="splash-nav-card cursor-pointer p-8 md:p-12 rounded-2xl shadow-xl text-white flex flex-col items-center justify-center" style="background-image: linear-gradient(to right, #43e97b 0%, #38f9d7 51%, #43e97b 100%);">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m5-8h1m-1 4h1m-1 4h1M5 21v-3a2 2 0 012-2h10a2 2 0 012 2v3" /></svg>
+                    <h3 class="text-xl md:text-2xl font-bold">เข้าสู่ระบบติดตาม (ห้องพัก)</h3>
+                </div>
+                <div id="nav-common-area" class="splash-nav-card cursor-pointer p-8 md:p-12 rounded-2xl shadow-xl text-white flex flex-col items-center justify-center" style="background-image: linear-gradient(to right, #89f7fe 0%, #66a6ff 51%, #89f7fe 100%);">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
+                    <h3 class="text-xl md:text-2xl font-bold">เข้าสู่ระบบติดตาม (ส่วนกลาง)</h3>
+                </div>
             </div>
+             <p id="splash-loading-text" class="mt-8 text-slate-500">กำลังเชื่อมต่อฐานข้อมูล...</p>
         </div>
     </div>
-    
-      <!-- Action Buttons -->
-    <div id="action-buttons-container" class="max-w-full mx-auto px-2 md:px-4 mt-4 flex flex-wrap justify-end items-center gap-2">
-        <button id="captureBtn" class="px-4 py-2 bg-purple-600 text-white rounded-md shadow hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 text-xs md:text-sm transform transition-transform hover:scale-105 inline-flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-            แคปเจอร์ (สำหรับส่งไลน์)
-        </button>
-        <button id="openReportModalBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-xs md:text-sm transform transition-transform hover:scale-105 inline-flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-            ทำรายงาน
-        </button>
-        <button id="openCommonAreaReportModalBtn" class="px-4 py-2 bg-emerald-600 text-white rounded-md shadow hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50 text-xs md:text-sm transform transition-transform hover:scale-105 inline-flex items-center gap-2 hidden">
-             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
-            สร้าง Infographic
-        </button>
-         <input type="file" id="import-file" class="hidden" accept=".json">
-         <label for="import-file" class="custom-file-button px-4 py-2 bg-emerald-600 text-white rounded-md shadow hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50 text-xs md:text-sm transform transition-transform hover:scale-105">
-             นำเข้าข้อมูล
-         </label>
-        <button id="exportDataBtn" class="px-4 py-2 bg-sky-600 text-white rounded-md shadow hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50 text-xs md:text-sm transform transition-transform hover:scale-105">
-            ส่งออกข้อมูล
-        </button>
-        <button id="clearDataBtn" class="px-4 py-2 bg-rose-600 text-white rounded-md shadow hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-opacity-50 text-xs md:text-sm transform transition-transform hover:scale-105">
-            ล้างข้อมูลทั้งหมด (รีเซ็ต)
-        </button>
-    </div>
 
-    <!-- Update Modal -->
-    <div id="updateModal" class="modal fixed inset-0 w-full h-full items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-xl p-6 w-11/12 md:w-1/3">
-            <h2 id="modal-title" class="text-xl font-bold mb-4">อัพเดทสถานะ</h2>
-            <p id="modal-description" class="mb-2"></p>
 
-            <div id="modal-progress-view">
-                <div class="mb-4">
-                    <label for="modal-task-select" class="block text-sm font-medium text-gray-700">งาน:</label>
-                    <select id="modal-task-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
-                    </select>
+    <!-- Main Application Container -->
+    <div id="main-app-container" class="hidden">
+        <div id="capture-area" class="max-w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+            <!-- Header -->
+            <header class="bg-slate-800 text-white p-4 flex justify-between items-center">
+                <div id="home-btn-container" class="flex items-center gap-4">
+                     <button id="home-btn" class="p-2 rounded-full hover:bg-slate-700 transition-colors" title="กลับสู่หน้าหลัก">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                     </button>
+                    <h1 class="text-xl md:text-2xl font-bold tracking-wide text-shadow-md">Vay Chinnakhet</h1>
+                </div>
+                <div class="w-1/2 text-center">
+                    <p class="text-xl md:text-4xl font-bold tracking-wider opacity-90" id="status-title">STATUS</p>
+                </div>
+                <div class="w-1/4 text-right">
+                     <p class="text-sm md:text-base">UPDATE: <span id="update-date"></span></p>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="p-2 md:p-4 overflow-x-auto">
+                  <table id="main-table" class="w-full border-collapse text-center text-xs md:text-sm">
+                      <!-- JS Generated Content -->
+                  </table>
+
+                  <!-- Legend -->
+                <div id="legend" class="mt-4 p-4 bg-slate-100 rounded-lg flex flex-wrap items-center gap-4 text-xs md:text-sm">
+                    <!-- JS Generated Content -->
+                </div>
+            </main>
+        </div>
+        
+        <!-- Controls Area -->
+        <div id="controls-area" class="max-w-full mx-auto p-4 mt-4 bg-white rounded-lg shadow-lg flex flex-wrap items-center gap-x-6 gap-y-4">
+            <div class="flex items-center gap-2">
+                <span class="font-bold text-slate-600">มุมมอง:</span>
+                <div id="view-toggle" class="bg-slate-200 p-1 rounded-full text-slate-800 text-xs md:text-sm font-semibold flex">
+                    <button id="view-residential-btn" class="view-toggle-btn px-3 py-1 rounded-full active">ห้องพัก</button>
+                    <button id="view-common-btn" class="view-toggle-btn px-3 py-1 rounded-full">ส่วนกลาง</button>
+                    <button id="view-qc-summary-btn" class="view-toggle-btn px-3 py-1 rounded-full">สรุป QC</button>
+                </div>
+            </div>
+
+            <div id="dropdown-container" class="flex items-center gap-2">
+                <span class="font-bold text-slate-600">เลือกงาน:</span>
+                <select id="task-category" class="bg-slate-50 border border-slate-300 rounded-md px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <!-- JS Generated Content -->
+                </select>
+            </div>
+
+            <div id="tiling-view-toggle" class="flex items-center gap-2 hidden">
+                 <span class="font-bold text-slate-600">รูปแบบ:</span>
+                <div class="bg-slate-200 p-1 rounded-full text-slate-800 text-xs md:text-sm font-semibold flex">
+                    <button id="view-tiling-summary-btn" class="view-toggle-btn px-3 py-1 rounded-full active">สรุป</button>
+                    <button id="view-tiling-detailed-btn" class="view-toggle-btn px-3 py-1 rounded-full">ละเอียด</button>
+                </div>
+            </div>
+        </div>
+        
+          <!-- Action Buttons -->
+        <div id="action-buttons-container" class="max-w-full mx-auto px-2 md:px-4 mt-4 flex flex-wrap justify-end items-center gap-2">
+            <button id="captureBtn" class="action-btn px-4 py-2 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-xs md:text-sm inline-flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                แคปเจอร์ (สำหรับส่งไลน์)
+            </button>
+            <button id="openReportModalBtn" class="action-btn px-4 py-2 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-xs md:text-sm inline-flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                ทำรายงาน
+            </button>
+            <button id="openCommonAreaReportModalBtn" class="action-btn px-4 py-2 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-xs md:text-sm inline-flex items-center gap-2 hidden">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+                สร้าง Infographic
+            </button>
+             <input type="file" id="import-file" class="hidden" accept=".json">
+             <label for="import-file" class="action-btn custom-file-button px-4 py-2 bg-slate-500 text-white rounded-md shadow hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-opacity-50 text-xs md:text-sm">
+                 นำเข้าข้อมูล
+             </label>
+            <button id="exportDataBtn" class="action-btn px-4 py-2 bg-slate-500 text-white rounded-md shadow hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-opacity-50 text-xs md:text-sm">
+                ส่งออกข้อมูล
+            </button>
+            <button id="clearDataBtn" class="action-btn px-4 py-2 bg-rose-600 text-white rounded-md shadow hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-opacity-50 text-xs md:text-sm">
+                ล้างข้อมูลทั้งหมด (รีเซ็ต)
+            </button>
+        </div>
+
+        <!-- Update Modal -->
+        <div id="updateModal" class="modal fixed inset-0 w-full h-full items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <div class="bg-white rounded-lg shadow-xl p-6 w-11/12 md:w-1/3">
+                <h2 id="modal-title" class="text-xl font-bold mb-4">อัพเดทสถานะ</h2>
+                <p id="modal-description" class="mb-2"></p>
+
+                <div id="modal-progress-view">
+                    <div class="mb-4">
+                        <label for="modal-task-select" class="block text-sm font-medium text-gray-700">งาน:</label>
+                        <select id="modal-task-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="progress-input" class="block text-sm font-medium text-gray-700">เปอร์เซ็นต์ความคืบหน้า (%):</label>
+                        <input type="number" id="progress-input" min="0" max="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
+                    </div>
                 </div>
                 
-                <div class="mb-4">
-                    <label for="progress-input" class="block text-sm font-medium text-gray-700">เปอร์เซ็นต์ความคืบหน้า (%):</label>
-                    <input type="number" id="progress-input" min="0" max="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
+                <div id="modal-multi-progress-view" class="hidden">
+                     <!-- JS Generated Content -->
+                </div>
+
+                 <div id="modal-inspection-view" class="hidden">
+                     <div class="mb-4">
+                         <label class="flex items-center">
+                             <input type="checkbox" id="in-inspection-checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                             <span class="ml-2 text-sm text-gray-700">อยู่ระหว่างการตรวจสอบ</span>
+                         </label>
+                     </div>
+                     <div class="mb-4">
+                             <label for="inspection-stage-select" class="block text-sm font-medium text-gray-700">ขั้นตอน:</label>
+                             <select id="inspection-stage-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
+                                   <option value="cm">CM</option>
+                                   <option value="qc">QC</option>
+                                   <option value="qc-cm">QC-CM</option>
+                             </select>
+                     </div>
+                     <div class="mb-4">
+                             <label for="score-input" class="block text-sm font-medium text-gray-700">คะแนน (0-100):</label>
+                             <input type="number" step="0.01" id="score-input" min="0" max="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
+                     </div>
+                     <div class="mb-4">
+                             <label class="flex items-center">
+                                 <input type="checkbox" id="major-defect-checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                 <span class="ml-2 text-sm text-gray-700">พบ Major Defect</span>
+                             </label>
+                     </div>
+                 </div>
+
+                <div class="flex justify-end gap-4">
+                    <button id="closeModalBtn" class="px-4 py-2 bg-slate-300 text-slate-800 rounded-md hover:bg-slate-400">ยกเลิก</button>
+                    <button id="saveProgressBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 w-24">บันทึก</button>
                 </div>
             </div>
-            
-            <div id="modal-multi-progress-view" class="hidden">
-                 <!-- JS Generated Content -->
-            </div>
+        </div>
 
-             <div id="modal-inspection-view" class="hidden">
-                 <div class="mb-4">
-                         <label for="inspection-stage-select" class="block text-sm font-medium text-gray-700">ขั้นตอน:</label>
-                         <select id="inspection-stage-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
-                               <option value="0">CM</option>
-                               <option value="1">QC</option>
-                         </select>
-                 </div>
-                 <div class="mb-4">
-                         <label for="score-input" class="block text-sm font-medium text-gray-700">คะแนน (0-100):</label>
-                         <input type="number" step="0.01" id="score-input" min="0" max="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
-                 </div>
-                 <div class="mb-4">
-                         <label class="flex items-center">
-                             <input type="checkbox" id="major-defect-checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                             <span class="ml-2 text-sm text-gray-700">พบ Major Defect</span>
-                         </label>
-                 </div>
-             </div>
-
-            <div class="flex justify-end gap-4">
-                <button id="closeModalBtn" class="px-4 py-2 bg-slate-300 text-slate-800 rounded-md hover:bg-slate-400">ยกเลิก</button>
-                <button id="saveProgressBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 w-24">บันทึก</button>
+        <!-- Report Generator & AI Modal -->
+        <div id="reportModal" class="modal fixed inset-0 w-full h-full items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-7xl h-[95vh] flex flex-col">
+                <div class="flex justify-between items-center p-4 border-b">
+                    <h2 id="report-modal-title" class="text-2xl font-bold inline-flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                        สร้างรายงาน
+                    </h2>
+                    <button id="closeReportModalBtn" class="text-3xl text-gray-500 hover:text-gray-800">&times;</button>
+                </div>
+                
+                <div id="report-content-area" class="flex-grow grid grid-cols-1 xl:grid-cols-3 gap-4 min-h-0 p-4 overflow-y-auto">
+                    <!-- JS Generated Content -->
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Report Generator & AI Modal -->
-    <div id="reportModal" class="modal fixed inset-0 w-full h-full items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-7xl h-[95vh] flex flex-col">
-            <div class="flex justify-between items-center p-4 border-b">
-                <h2 id="report-modal-title" class="text-2xl font-bold inline-flex items-center gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-                    สร้างรายงาน
-                </h2>
-                <button id="closeReportModalBtn" class="text-3xl text-gray-500 hover:text-gray-800">&times;</button>
-            </div>
-            
-            <div id="report-content-area" class="flex-grow grid grid-cols-1 xl:grid-cols-3 gap-4 min-h-0 p-4 overflow-y-auto">
-                <!-- JS Generated Content -->
+
+        <!-- Confirmation Modal -->
+        <div id="confirmModal" class="modal fixed inset-0 w-full h-full items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+            <div class="bg-white rounded-lg shadow-xl p-6 w-11/12 md:w-1/4">
+                <h2 id="confirm-title" class="text-xl font-bold mb-4">ยืนยันการกระทำ</h2>
+                <p id="confirm-message" class="mb-6">คุณแน่ใจหรือไม่ว่าต้องการล้างข้อมูลทั้งหมด? การกระทำนี้ไม่สามารถย้อนกลับได้</p>
+                <div class="flex justify-end gap-4">
+                    <button id="confirmCancelBtn" class="px-4 py-2 bg-slate-300 text-slate-800 rounded-md hover:bg-slate-400">ยกเลิก</button>
+                    <button id="confirmOkBtn" class="px-4 py-2 bg-rose-600 text-white rounded-md hover:bg-rose-700">ยืนยัน</button>
+                </div>
             </div>
         </div>
-    </div>
 
-
-    <!-- Confirmation Modal -->
-    <div id="confirmModal" class="modal fixed inset-0 w-full h-full items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-xl p-6 w-11/12 md:w-1/4">
-            <h2 id="confirm-title" class="text-xl font-bold mb-4">ยืนยันการกระทำ</h2>
-            <p id="confirm-message" class="mb-6">คุณแน่ใจหรือไม่ว่าต้องการล้างข้อมูลทั้งหมด? การกระทำนี้ไม่สามารถย้อนกลับได้</p>
-            <div class="flex justify-end gap-4">
-                <button id="confirmCancelBtn" class="px-4 py-2 bg-slate-300 text-slate-800 rounded-md hover:bg-slate-400">ยกเลิก</button>
-                <button id="confirmOkBtn" class="px-4 py-2 bg-rose-600 text-white rounded-md hover:bg-rose-700">ยืนยัน</button>
+        <!-- Notification Modal -->
+        <div id="notificationModal" class="modal fixed inset-0 w-full h-full items-center justify-center z-[60]" role="dialog" aria-modal="true" aria-labelledby="notification-title">
+            <div class="bg-white rounded-lg shadow-xl p-6 w-11/12 md:w-1/4 text-center">
+                <h2 id="notification-title" class="text-xl font-bold mb-4"></h2>
+                <p id="notification-message" class="mb-6"></p>
+                <button id="notificationOkBtn" class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">ตกลง</button>
             </div>
         </div>
-    </div>
+    </div> <!-- END of main-app-container -->
 
-    <!-- Notification Modal -->
-    <div id="notificationModal" class="modal fixed inset-0 w-full h-full items-center justify-center z-[60]">
-        <div class="bg-white rounded-lg shadow-xl p-6 w-11/12 md:w-1/4 text-center">
-            <h2 id="notification-title" class="text-xl font-bold mb-4"></h2>
-            <p id="notification-message" class="mb-6"></p>
-            <button id="notificationOkBtn" class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">ตกลง</button>
-        </div>
-    </div>
 
     <!-- Toast Notification -->
     <div id="toast" class="fixed top-5 right-5 bg-slate-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-[120%] transition-transform duration-300 ease-in-out z-[100]">
@@ -449,10 +548,14 @@
             let confirmCallback = null;
             let toastTimeout;
             let realtimeChannel;
+            let lastFocusedElement;
+            let activeModal = null;
+
 
             // --- DATA HANDLING (Supabase) ---
             async function setupRealtimeListenerAndInitApp() {
-                showToast("กำลังเชื่อมต่อฐานข้อมูล...", 2000);
+                const splashLoadingText = document.getElementById('splash-loading-text');
+                splashLoadingText.textContent = "กำลังดึงข้อมูลล่าสุด...";
 
                 const { data, error } = await supabaseClient
                     .from(CONFIG.DB_TABLE_NAME)
@@ -463,6 +566,7 @@
                 if (error && error.code !== 'PGRST116') {
                     console.error("Error fetching initial data:", error);
                     showNotificationModal("Supabase Error", "ไม่สามารถดึงข้อมูลเริ่มต้นได้: " + error.message);
+                    splashLoadingText.textContent = "เกิดข้อผิดพลาดในการเชื่อมต่อ";
                     return;
                 }
 
@@ -470,6 +574,7 @@
                     projectData = data.data;
                 } else {
                     console.log("No data in Supabase, creating initial document...");
+                    splashLoadingText.textContent = "ไม่พบข้อมูล, กำลังสร้างเอกสารเริ่มต้น...";
                     projectData = generateInitialDataObject();
                     const { error: insertError } = await supabaseClient
                         .from(CONFIG.DB_TABLE_NAME)
@@ -478,11 +583,15 @@
                     if (insertError) {
                         console.error("Error creating initial document:", insertError);
                         showNotificationModal("Supabase Error", "ไม่สามารถสร้างข้อมูลเริ่มต้นได้ กรุณาตรวจสอบว่าสร้างตารางถูกต้อง");
+                        splashLoadingText.textContent = "เกิดข้อผิดพลาดในการสร้างข้อมูล";
                         return;
                     }
                     showToast("สร้างฐานข้อมูลเริ่มต้นสำเร็จ");
                 }
-                renderTable();
+                
+                renderSplashScreen();
+                splashLoadingText.textContent = `ข้อมูลล่าสุด ณ ${new Date().toLocaleTimeString('th-TH')}`;
+
 
                 if (realtimeChannel) {
                     realtimeChannel.unsubscribe();
@@ -494,17 +603,31 @@
                         { event: 'UPDATE', schema: 'public', table: CONFIG.DB_TABLE_NAME, filter: `id=eq.${CONFIG.DB_ROW_ID}` },
                         (payload) => {
                             console.log('Realtime update received!', payload);
+                            const oldData = JSON.parse(JSON.stringify(projectData)); // Deep copy
                             projectData = payload.new.data;
-                            renderTable();
+                            
+                            // If main app is open, render it. If not, just update splash
+                            if(!document.getElementById('main-app-container').classList.contains('hidden')) {
+                                renderTable();
+                                highlightChanges(oldData, projectData);
+                            }
+                            renderSplashScreen();
+                            showToast("ข้อมูลถูกอัพเดทโดยผู้ใช้อื่น", 2500);
                         }
                     )
                     .subscribe((status, err) => {
                         if (status === 'SUBSCRIBED') {
-                             showToast("เชื่อมต่อ Real-time สำเร็จ!", 2000);
+                             splashLoadingText.textContent = `เชื่อมต่อ Real-time สำเร็จ!`;
+                             setTimeout(() => {
+                                 if (document.getElementById('main-app-container').classList.contains('hidden')) {
+                                     splashLoadingText.textContent = `ข้อมูลล่าสุด ณ ${new Date().toLocaleTimeString('th-TH')}`;
+                                 }
+                             }, 2000);
                         }
                         if (status === 'CHANNEL_ERROR') {
                              console.error('Realtime channel error:', err);
                              showNotificationModal("Connection Error", "การเชื่อมต่อ Real-time ล้มเหลว กรุณาตรวจสอบว่าเปิดใช้งาน Publications ใน Supabase แล้ว");
+                             splashLoadingText.textContent = "การเชื่อมต่อ Real-time ล้มเหลว";
                         }
                     });
             }
@@ -525,6 +648,7 @@
                                  unitData.qcScore = 0;
                                  unitData.cmHasMajorDefect = false;
                                  unitData.qcHasMajorDefect = false;
+                                 unitData.inInspection = false;
                              } else if (catDef.type === 'multi-progress') {
                                  catDef.tasks.forEach(task => {
                                      unitData[`progress_${task.key}`] = 0;
@@ -552,6 +676,128 @@
                 });
                 return data;
             }
+
+             // --- SPLASH SCREEN LOGIC ---
+            function calculateProjectSummary() {
+                if (!projectData || Object.keys(projectData).length === 0) {
+                    return { overallProgress: 0, completedUnits: 0, qcPassRate: 0 };
+                }
+
+                let totalProgressPoints = 0;
+                let totalMaxPoints = 0;
+
+                // 1. Calculate Residential Progress
+                Object.keys(taskDefinitions).forEach(catKey => {
+                    const catDef = taskDefinitions[catKey];
+                    CONFIG.FLOORS.forEach(floor => {
+                        const roomsOnThisFloor = (floor === 2) ? CONFIG.ROOMS_ON_FLOOR_2 : CONFIG.ROOMS_PER_FLOOR;
+                        for (let room = 1; room <= roomsOnThisFloor; room++) {
+                            const unitData = projectData[catKey]?.[floor]?.[room] || {};
+                            if (catDef.type === 'progress') {
+                                // A simple progress from 0-100 for the entire task category
+                                const taskProgress = (unitData.progress || 0) / catDef.tasks.length;
+                                const completedTasksProgress = (unitData.taskIndex || 0) * (100 / catDef.tasks.length);
+                                totalProgressPoints += taskProgress + completedTasksProgress;
+                                totalMaxPoints += 100;
+                            } else if (catDef.type === 'multi-progress') {
+                                let subTaskTotal = 0;
+                                catDef.tasks.forEach(task => {
+                                    subTaskTotal += (unitData[`progress_${task.key}`] || 0);
+                                });
+                                totalProgressPoints += subTaskTotal / catDef.tasks.length;
+                                totalMaxPoints += 100;
+                            } else if (catDef.type === 'inspection') {
+                                const score = unitData.qcScore > 0 ? unitData.qcScore : (unitData.cmScore || 0);
+                                totalProgressPoints += score;
+                                totalMaxPoints += 100;
+                            }
+                        }
+                    });
+                });
+                
+                // 2. Calculate Common Area Progress
+                Object.keys(commonAreaDefinitions).forEach(locKey => {
+                    const locDef = commonAreaDefinitions[locKey];
+                    locDef.tasks.forEach((task, taskIndex) => {
+                        CONFIG.COMMON_AREA_FLOORS.forEach(floor => {
+                            totalProgressPoints += projectData.commonArea?.[locKey]?.tasks?.[taskIndex]?.progress?.[floor] || 0;
+                            totalMaxPoints += 100;
+                        });
+                    });
+                });
+
+                const overallProgress = totalMaxPoints > 0 ? (totalProgressPoints / totalMaxPoints) * 100 : 0;
+
+                // 3. Calculate Completed Units (based on End Product QC pass)
+                let completedUnits = 0;
+                if(projectData.endProduct) {
+                    CONFIG.FLOORS.forEach(floor => {
+                        const roomsOnThisFloor = (floor === 2) ? CONFIG.ROOMS_ON_FLOOR_2 : CONFIG.ROOMS_PER_FLOOR;
+                        for (let room = 1; room <= roomsOnThisFloor; room++) {
+                            const unitData = projectData.endProduct[floor]?.[room] || {};
+                            if(unitData.qcScore >= 85) {
+                                completedUnits++;
+                            }
+                        }
+                    });
+                }
+
+                // 4. Calculate QC Pass Rate
+                let totalQcChecks = 0;
+                let totalQcPasses = 0;
+                ['wetWork', 'endProduct'].forEach(catKey => {
+                    if(!projectData[catKey]) return;
+                     CONFIG.FLOORS.forEach(floor => {
+                        const roomsOnThisFloor = (floor === 2) ? CONFIG.ROOMS_ON_FLOOR_2 : CONFIG.ROOMS_PER_FLOOR;
+                        for (let room = 1; room <= roomsOnThisFloor; room++) {
+                             const unitData = projectData[catKey][floor]?.[room] || {};
+                             if (unitData.qcScore > 0) {
+                                totalQcChecks++;
+                                if (unitData.qcScore >= 85) {
+                                    totalQcPasses++;
+                                }
+                             }
+                        }
+                    });
+                });
+                const qcPassRate = totalQcChecks > 0 ? (totalQcPasses / totalQcChecks) * 100 : 0;
+
+
+                return { overallProgress, completedUnits, qcPassRate };
+            }
+            
+            function renderSplashScreen() {
+                const summary = calculateProjectSummary();
+                const progressCircle = document.querySelector('.infographic-progress-circle');
+                
+                document.getElementById('splash-overall-progress').textContent = `${summary.overallProgress.toFixed(1)}%`;
+                if(progressCircle) progressCircle.style.setProperty('--progress', `${summary.overallProgress.toFixed(1)}%`);
+                
+                document.getElementById('splash-completed-units').textContent = `${summary.completedUnits} / ${CONFIG.TOTAL_UNITS}`;
+                document.getElementById('splash-qc-pass-rate').textContent = `${summary.qcPassRate.toFixed(1)}%`;
+            }
+
+            function enterAppView(view) {
+                document.getElementById('splash-screen').classList.add('hidden');
+                document.getElementById('main-app-container').classList.remove('hidden');
+                currentView = view;
+                
+                const resBtn = document.getElementById('view-residential-btn');
+                const comBtn = document.getElementById('view-common-btn');
+                const qcBtn = document.getElementById('view-qc-summary-btn');
+                
+                resBtn.classList.toggle('active', view === 'residential');
+                comBtn.classList.toggle('active', view === 'common');
+                qcBtn.classList.remove('active');
+
+                renderTable();
+            }
+
+            function backToSplash() {
+                document.getElementById('main-app-container').classList.add('hidden');
+                document.getElementById('splash-screen').classList.remove('hidden');
+                renderSplashScreen(); // Re-render in case of updates
+            }
             
             function getProgressColor(progress, baseColor = 'bg-sky-500') {
                  if (progress === undefined || progress === 0) return 'bg-white text-black';
@@ -574,9 +820,12 @@
                 if (currentView === 'residential') {
                     captureArea.classList.remove('common-view-active');
                     renderResidentialTable();
-                } else {
+                } else if (currentView === 'common') {
                     captureArea.classList.add('common-view-active');
                     renderCommonAreaTable();
+                } else if (currentView === 'qc_summary') {
+                    captureArea.classList.remove('common-view-active');
+                    renderQCSummaryTable();
                 }
                 updateUI();
             }
@@ -741,12 +990,17 @@
                             let styleClasses = 'bg-white text-black';
                             let cellText = '0';
                             if (isInspection) {
-                                let scoreToShow = 0, defectToShow = false, stageLabel = '';
-                                if (unitData.qcScore > 0) { scoreToShow = unitData.qcScore; defectToShow = unitData.qcHasMajorDefect; stageLabel = 'QC: '; } 
-                                else if (unitData.cmScore > 0) { scoreToShow = unitData.cmScore; defectToShow = unitData.cmHasMajorDefect; stageLabel = 'CM: '; }
-                                if (scoreToShow > 0) styleClasses = scoreToShow >= 85 ? 'bg-teal-500 text-white' : 'bg-rose-500 text-white';
-                                cellText = scoreToShow > 0 ? `${stageLabel}${Number.isInteger(scoreToShow) ? scoreToShow : scoreToShow.toFixed(2)}` : '0';
-                                if (defectToShow) cellText += '!';
+                                if (unitData.inInspection) {
+                                    styleClasses = 'bg-yellow-400 text-black';
+                                    cellText = 'ตรวจสอบ';
+                                } else {
+                                    let scoreToShow = 0, defectToShow = false, stageLabel = '';
+                                    if (unitData.qcScore > 0) { scoreToShow = unitData.qcScore; defectToShow = unitData.qcHasMajorDefect; stageLabel = 'QC: '; } 
+                                    else if (unitData.cmScore > 0) { scoreToShow = unitData.cmScore; defectToShow = unitData.cmHasMajorDefect; stageLabel = 'CM: '; }
+                                    if (scoreToShow > 0) styleClasses = scoreToShow >= 85 ? 'bg-teal-500 text-white' : 'bg-rose-500 text-white';
+                                    cellText = scoreToShow > 0 ? `${stageLabel}${Number.isInteger(scoreToShow) ? scoreToShow : scoreToShow.toFixed(2)}` : '0';
+                                    if (defectToShow) cellText += '!';
+                                }
                             } else if (isMultiProgress) {
                                  let totalProgress = 0;
                                  const activeTasks = [];
@@ -864,7 +1118,140 @@
                 }
                 mainTable.appendChild(tfoot);
             }
+
+            function renderQCSummaryTable() {
+                const mainTable = document.getElementById('main-table');
+                mainTable.innerHTML = '';
+                
+                const thead = document.createElement('thead');
+                let headerHTML = `<tr class="bg-slate-200">
+                        <th class="border p-2" rowspan="2"><span>ชั้น</span></th>
+                        <th class="border p-2" colspan="${CONFIG.ROOMS_PER_FLOOR}"><span>ROOM No.</span></th>
+                        <th class="border-y border-l bg-white separator-cell" rowspan="2"></th>
+                        <th class="border p-2 bg-slate-200" colspan="2"><span>สรุป Wet Work</span></th>
+                        <th class="border p-2 bg-slate-200" colspan="2"><span>สรุป End Product</span></th>
+                    </tr>
+                    <tr class="bg-slate-50">`;
+                    for (let i = 1; i <= CONFIG.ROOMS_PER_FLOOR; i++) {
+                        headerHTML += `<th class="border p-1 md:p-2 font-normal"><span>${i}</span></th>`;
+                    }
+                    headerHTML += `<th class="border p-2 bg-teal-100"><span>ผ่าน</span></th>`;
+                    headerHTML += `<th class="border p-2 bg-rose-100"><span>ไม่ผ่าน</span></th>`;
+                    headerHTML += `<th class="border p-2 bg-teal-100"><span>ผ่าน</span></th>`;
+                    headerHTML += `<th class="border p-2 bg-rose-100"><span>ไม่ผ่าน</span></th>`;
+                    headerHTML += '</tr>';
+                thead.innerHTML = headerHTML;
+                mainTable.appendChild(thead);
+
+                const tbody = document.createElement('tbody');
+                const totals = { ww_pass: 0, ww_fail: 0, ep_pass: 0, ep_fail: 0 };
+                
+                const getScoreCellStyle = (score) => {
+                    if (score === undefined || score === null || score === 0) return 'bg-white text-gray-500';
+                    if (score >= 85) return 'bg-teal-100 text-teal-800';
+                    return 'bg-rose-100 text-rose-800';
+                };
+
+                CONFIG.FLOORS.forEach(floor => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td class="border p-2 font-bold bg-slate-100"><span>${floor}</span></td>`;
+                    const roomsOnThisFloor = (floor === 2) ? CONFIG.ROOMS_ON_FLOOR_2 : CONFIG.ROOMS_PER_FLOOR;
+                    
+                    let floor_ww_pass = 0, floor_ww_fail = 0, floor_ep_pass = 0, floor_ep_fail = 0;
+
+                    for (let room = 1; room <= CONFIG.ROOMS_PER_FLOOR; room++) {
+                        if (floor === 2 && room > CONFIG.ROOMS_ON_FLOOR_2) {
+                            row.innerHTML += `<td class="border p-0 bg-slate-200"></td>`;
+                            continue;
+                        }
+                        const wwData = projectData.wetWork?.[floor]?.[room] || {};
+                        const epData = projectData.endProduct?.[floor]?.[room] || {};
+                        
+                        if (wwData.qcScore > 0) {
+                            if (wwData.qcScore >= 85) floor_ww_pass++; else floor_ww_fail++;
+                        }
+                        if (epData.qcScore > 0) {
+                            if (epData.qcScore >= 85) floor_ep_pass++; else floor_ep_fail++;
+                        }
+
+                        const wwScoreText = wwData.qcScore > 0 ? `${Number.isInteger(wwData.qcScore) ? wwData.qcScore : wwData.qcScore.toFixed(2)}${wwData.qcHasMajorDefect ? '!' : ''}` : '-';
+                        const epScoreText = epData.qcScore > 0 ? `${Number.isInteger(epData.qcScore) ? epData.qcScore : epData.qcScore.toFixed(2)}${epData.qcHasMajorDefect ? '!' : ''}` : '-';
+
+                        const wwStyle = getScoreCellStyle(wwData.qcScore);
+                        const epStyle = getScoreCellStyle(epData.qcScore);
+
+                        row.innerHTML += `
+                            <td class="border p-0 text-center text-xs font-semibold">
+                                <div class="p-1 border-b ${wwStyle}">WW: ${wwScoreText}</div>
+                                <div class="p-1 ${epStyle}">EP: ${epScoreText}</div>
+                            </td>`;
+                    }
+                    
+                    totals.ww_pass += floor_ww_pass;
+                    totals.ww_fail += floor_ww_fail;
+                    totals.ep_pass += floor_ep_pass;
+                    totals.ep_fail += floor_ep_fail;
+
+                    row.innerHTML += `<td class="border-y border-l bg-white separator-cell"></td>`;
+                    row.innerHTML += `<td class="border p-2 summary-cell text-green-700">${floor_ww_pass}</td>`;
+                    row.innerHTML += `<td class="border p-2 summary-cell text-red-700">${floor_ww_fail}</td>`;
+                    row.innerHTML += `<td class="border p-2 summary-cell text-green-700">${floor_ep_pass}</td>`;
+                    row.innerHTML += `<td class="border p-2 summary-cell text-red-700">${floor_ep_fail}</td>`;
+                    tbody.appendChild(row);
+                });
+                mainTable.appendChild(tbody);
+
+                const tfoot = document.createElement('tfoot');
+                let footerHTML = `<tr class="font-bold bg-slate-200">
+                    <td class="border p-2" colspan="${CONFIG.ROOMS_PER_FLOOR + 1}"><span>TOTAL ( ${CONFIG.TOTAL_UNITS} UNIT )</span></td>
+                    <td class="border-y border-l bg-white separator-cell"></td>
+                    <td class="border p-2 bg-teal-100">${totals.ww_pass}</td>
+                    <td class="border p-2 bg-rose-100">${totals.ww_fail}</td>
+                    <td class="border p-2 bg-teal-100">${totals.ep_pass}</td>
+                    <td class="border p-2 bg-rose-100">${totals.ep_fail}</td>
+                    </tr>`;
+                tfoot.innerHTML = footerHTML;
+                mainTable.appendChild(tfoot);
+            }
             
+            function highlightChanges(oldData, newData) {
+                if (currentView === 'residential') {
+                    if (!oldData[currentCategory] || !newData[currentCategory]) return;
+                    CONFIG.FLOORS.forEach(floor => {
+                        const roomsOnThisFloor = (floor === 2) ? CONFIG.ROOMS_ON_FLOOR_2 : CONFIG.ROOMS_PER_FLOOR;
+                        for (let room = 1; room <= roomsOnThisFloor; room++) {
+                            const oldUnitData = oldData[currentCategory]?.[floor]?.[room];
+                            const newUnitData = newData[currentCategory]?.[floor]?.[room];
+                            if (JSON.stringify(oldUnitData) !== JSON.stringify(newUnitData)) {
+                                const cell = document.querySelector(`.table-cell[data-floor='${floor}'][data-room='${room}']`);
+                                if (cell) {
+                                    cell.classList.remove('cell-updated');
+                                    setTimeout(() => cell.classList.add('cell-updated'), 10);
+                                }
+                            }
+                        }
+                    });
+                } else { // common area
+                    if (!oldData.commonArea || !newData.commonArea) return;
+                    Object.keys(commonAreaDefinitions).forEach(locKey => {
+                        const locDef = commonAreaDefinitions[locKey];
+                        locDef.tasks.forEach((task, taskIndex) => {
+                            CONFIG.COMMON_AREA_FLOORS.forEach(floor => {
+                                const oldProgress = oldData.commonArea?.[locKey]?.tasks?.[taskIndex]?.progress?.[floor];
+                                const newProgress = newData.commonArea?.[locKey]?.tasks?.[taskIndex]?.progress?.[floor];
+                                if (oldProgress !== newProgress) {
+                                    const cell = document.querySelector(`.table-cell[data-location-key='${locKey}'][data-task-index='${taskIndex}'][data-floor='${floor}']`);
+                                    if (cell) {
+                                        cell.classList.remove('cell-updated');
+                                        setTimeout(() => cell.classList.add('cell-updated'), 10);
+                                    }
+                                }
+                            });
+                        });
+                    });
+                }
+            }
+
             function setupCategoryDropdown() {
                 const dropdown = document.getElementById('task-category');
                 dropdown.innerHTML = '';
@@ -879,16 +1266,26 @@
             
             function updateUI() {
                 const isCommonView = currentView === 'common';
+                const isQCSummaryView = currentView === 'qc_summary';
                 const categoryDef = taskDefinitions[currentCategory];
 
-                document.getElementById('dropdown-container').style.display = isCommonView ? 'none' : 'flex';
+                document.getElementById('dropdown-container').style.display = isCommonView || isQCSummaryView ? 'none' : 'flex';
                 document.getElementById('legend').style.display = isCommonView ? 'none' : 'flex';
-                document.getElementById('openReportModalBtn').style.display = isCommonView ? 'none' : 'inline-flex';
+                document.getElementById('openReportModalBtn').style.display = isCommonView || isQCSummaryView ? 'none' : 'inline-flex';
                 document.getElementById('openCommonAreaReportModalBtn').style.display = isCommonView ? 'inline-flex' : 'none';
-                document.getElementById('status-title').textContent = isCommonView ? 'STATUS งานพื้นที่ส่วนกลาง' : categoryDef.title;
+                
+                let title = '';
+                if (isCommonView) {
+                    title = 'STATUS งานพื้นที่ส่วนกลาง';
+                } else if (isQCSummaryView) {
+                    title = 'สรุปคะแนน QC: WET WORK & END PRODUCT';
+                } else {
+                    title = categoryDef.title;
+                }
+                document.getElementById('status-title').textContent = title;
                 
                 const tilingToggle = document.getElementById('tiling-view-toggle');
-                if (categoryDef.hasDetailedView && !isCommonView) {
+                if (categoryDef.hasDetailedView && !isCommonView && !isQCSummaryView) {
                     tilingToggle.classList.remove('hidden');
                     document.getElementById('view-tiling-summary-btn').classList.toggle('active', currentDetailedView === 'summary');
                     document.getElementById('view-tiling-detailed-btn').classList.toggle('active', currentDetailedView === 'detailed');
@@ -908,6 +1305,16 @@
             function updateLegend() {
                 const legend = document.getElementById('legend');
                 legend.innerHTML = '<strong>คำอธิบาย:</strong>';
+                
+                if (currentView === 'qc_summary') {
+                    legend.innerHTML += `<div class="flex items-center gap-2"><div class="px-2 py-1 rounded bg-teal-100 text-teal-800">ผ่าน</div><span>คะแนน >= 85</span></div>`;
+                    legend.innerHTML += `<div class="flex items-center gap-2"><div class="px-2 py-1 rounded bg-rose-100 text-rose-800">ไม่ผ่าน</div><span>คะแนน < 85</span></div>`;
+                    legend.innerHTML += `<div class="flex items-center gap-2"><div class="px-2 py-1 rounded bg-gray-100 text-gray-800">WW</div><span>Wet Work</span></div>`;
+                    legend.innerHTML += `<div class="flex items-center gap-2"><div class="px-2 py-1 rounded bg-gray-100 text-gray-800">EP</div><span>End Product</span></div>`;
+                    legend.innerHTML += `<div class="flex items-center gap-2"><span class="font-bold text-lg">!</span><span>พบ Major Defect</span></div>`;
+                    return;
+                }
+
                 const categoryDef = taskDefinitions[currentCategory];
 
                 if (categoryDef.hasDetailedView && currentDetailedView === 'detailed') {
@@ -916,6 +1323,7 @@
                     });
                     legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded bg-teal-500"></div><span>เสร็จสมบูรณ์ (100%)</span></div>`;
                 } else if (categoryDef.type === 'inspection') {
+                    legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded bg-yellow-400"></div><span>อยู่ระหว่างตรวจสอบ</span></div>`;
                     legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded bg-teal-500"></div><span>ผ่าน (>= 85)</span></div>`;
                     legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded bg-rose-500"></div><span>ไม่ผ่าน (< 85)</span></div>`;
                     legend.innerHTML += `<div class="flex items-center gap-2"><span class="font-bold text-lg">!</span><span>พบ Major Defect</span></div>`;
@@ -932,15 +1340,63 @@
                     legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded bg-teal-500"></div><span>เสร็จสมบูรณ์</span></div>`;
                 }
             }
+
+            function trapFocus(e) {
+                if (!activeModal || e.key !== 'Tab') return;
+
+                const focusableElements = activeModal.querySelectorAll(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                const firstFocusableElement = focusableElements[0];
+                const lastFocusableElement = focusableElements[focusableElements.length - 1];
+
+                if (e.shiftKey) { // Shift + Tab
+                    if (document.activeElement === firstFocusableElement) {
+                        lastFocusableElement.focus();
+                        e.preventDefault();
+                    }
+                } else { // Tab
+                    if (document.activeElement === lastFocusableElement) {
+                        firstFocusableElement.focus();
+                        e.preventDefault();
+                    }
+                }
+            }
             
-            function openModal(modalId) {
-                document.getElementById(modalId).style.display = 'flex';
+            function openModal(modalId, triggerElement = document.activeElement) {
+                const modal = document.getElementById(modalId);
+                if (!modal) return;
+                
+                lastFocusedElement = triggerElement;
+                activeModal = modal;
+                
+                modal.style.display = 'flex';
                 document.body.classList.add('modal-open');
+                
+                const focusableElements = modal.querySelectorAll(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                if (focusableElements.length > 0) {
+                    focusableElements[0].focus();
+                }
+                
+                modal.addEventListener('keydown', trapFocus);
             }
             
             function closeModal(modalId) {
-                document.getElementById(modalId).style.display = 'none';
+                const modal = document.getElementById(modalId);
+                if (!modal) return;
+
+                modal.style.display = 'none';
                 document.body.classList.remove('modal-open');
+                
+                modal.removeEventListener('keydown', trapFocus);
+                activeModal = null;
+
+                if (lastFocusedElement) {
+                    lastFocusedElement.focus();
+                }
+
                 if(modalId === 'updateModal') clearSelection();
             }
 
@@ -991,20 +1447,42 @@
 
                 if (categoryDef.type === 'inspection') {
                     document.getElementById('modal-inspection-view').classList.remove('hidden');
+                    const inInspectionCheckbox = document.getElementById('in-inspection-checkbox');
                     const stageSelect = document.getElementById('inspection-stage-select');
                     const scoreInput = document.getElementById('score-input');
                     const defectCheckbox = document.getElementById('major-defect-checkbox');
                     const isMultiSelect = selectedCells.size > 1;
-                    const defaultStage = isMultiSelect ? 0 : (unitData.qcScore > 0 ? 1 : (unitData.cmScore > 0 ? 0 : 0));
-                    stageSelect.value = defaultStage;
+
+                    const toggleInspectionFields = () => {
+                        const isDisabled = inInspectionCheckbox.checked;
+                        stageSelect.disabled = isDisabled;
+                        scoreInput.disabled = isDisabled;
+                        defectCheckbox.disabled = isDisabled;
+                    };
+                    inInspectionCheckbox.removeEventListener('change', toggleInspectionFields);
+                    inInspectionCheckbox.addEventListener('change', toggleInspectionFields);
+                    
+                    inInspectionCheckbox.checked = isMultiSelect ? false : (unitData.inInspection || false);
+                    toggleInspectionFields();
+                    
+                    stageSelect.value = isMultiSelect ? 'cm' : 'cm';
 
                     const updateInspectionUI = () => {
-                        const stage = parseInt(stageSelect.value, 10);
-                        scoreInput.value = isMultiSelect ? '' : (stage === 0 ? unitData.cmScore : unitData.qcScore);
-                        defectCheckbox.checked = isMultiSelect ? false : (stage === 0 ? unitData.cmHasMajorDefect : unitData.qcHasMajorDefect);
+                        const stage = stageSelect.value;
+                        if (stage === 'cm') {
+                            scoreInput.value = isMultiSelect ? '' : (unitData.cmScore || '');
+                            defectCheckbox.checked = isMultiSelect ? false : (unitData.cmHasMajorDefect || false);
+                        } else if (stage === 'qc') {
+                            scoreInput.value = isMultiSelect ? '' : (unitData.qcScore || '');
+                            defectCheckbox.checked = isMultiSelect ? false : (unitData.qcHasMajorDefect || false);
+                        } else { // qc-cm
+                            scoreInput.value = isMultiSelect ? '' : (unitData.qcScore || '');
+                            defectCheckbox.checked = isMultiSelect ? false : (unitData.qcHasMajorDefect || false);
+                        }
                     };
                     updateInspectionUI();
                     stageSelect.onchange = updateInspectionUI;
+
                 } else if (categoryDef.type === 'multi-progress') {
                     const view = document.getElementById('modal-multi-progress-view');
                     const isMultiSelect = selectedCells.size > 1;
@@ -1042,11 +1520,11 @@
                 openModal('updateModal');
             }
             
-            function showConfirmModal(title, message, callback) {
+            function showConfirmModal(title, message, callback, triggerElement) {
                 document.getElementById('confirm-title').textContent = title;
                 document.getElementById('confirm-message').textContent = message;
                 confirmCallback = callback;
-                openModal('confirmModal');
+                openModal('confirmModal', triggerElement);
             }
 
             function showNotificationModal(title, message) {
@@ -1115,25 +1593,42 @@
             function applyResidentialProgressUpdates(data) {
                 const categoryDef = taskDefinitions[currentCategory];
                 if (categoryDef.type === 'inspection') {
-                    const stage = parseInt(document.getElementById('inspection-stage-select').value, 10);
-                    const newScoreStr = document.getElementById('score-input').value;
-                    if (newScoreStr === '') return;
-                    const newScore = parseFloat(newScoreStr);
-                    if (isNaN(newScore) || newScore < 0 || newScore > 100) return;
-                    const hasDefect = document.getElementById('major-defect-checkbox').checked;
+                    const inInspection = document.getElementById('in-inspection-checkbox').checked;
 
                     selectedCells.forEach(cell => {
                         const { floor, room } = cell.dataset;
                         const unitData = data[currentCategory][floor][room];
-                        if (stage === 0) {
-                            unitData.cmScore = newScore;
-                            unitData.cmHasMajorDefect = hasDefect;
+                        
+                        if (inInspection) {
+                            unitData.inInspection = true;
+                            unitData.cmScore = 0;
+                            unitData.qcScore = 0;
+                            unitData.cmHasMajorDefect = false;
+                            unitData.qcHasMajorDefect = false;
                         } else {
-                            unitData.qcScore = newScore;
-                            unitData.qcHasMajorDefect = hasDefect;
-                            if (unitData.cmScore === 0) {
-                                unitData.cmScore = 100;
-                                unitData.cmHasMajorDefect = false;
+                            unitData.inInspection = false;
+                            const stage = document.getElementById('inspection-stage-select').value;
+                            const newScoreStr = document.getElementById('score-input').value;
+                            if (newScoreStr === '') return;
+                            const newScore = parseFloat(newScoreStr);
+                            if (isNaN(newScore) || newScore < 0 || newScore > 100) return;
+                            const hasDefect = document.getElementById('major-defect-checkbox').checked;
+
+                            if (stage === 'cm') {
+                                unitData.cmScore = newScore;
+                                unitData.cmHasMajorDefect = hasDefect;
+                            } else if (stage === 'qc') {
+                                unitData.qcScore = newScore;
+                                unitData.qcHasMajorDefect = hasDefect;
+                                if (unitData.cmScore === 0) {
+                                    unitData.cmScore = 100;
+                                    unitData.cmHasMajorDefect = false;
+                                }
+                            } else { // qc-cm
+                                unitData.cmScore = newScore;
+                                unitData.cmHasMajorDefect = hasDefect;
+                                unitData.qcScore = newScore;
+                                unitData.qcHasMajorDefect = hasDefect;
                             }
                         }
                     });
@@ -1261,9 +1756,9 @@
             }
             
             // --- AI & REPORTING FUNCTIONS ---
-            function setupAndOpenReportModal() {
+            function setupAndOpenReportModal(triggerElement) {
                  renderReportUI();
-                 openModal('reportModal');
+                 openModal('reportModal', triggerElement);
             }
 
             function renderReportUI() {
@@ -1314,10 +1809,10 @@
                             <div id="ai-report-view" class="hidden mt-2 bg-indigo-50 border border-indigo-200 rounded-lg p-3">
                                 <p class="font-semibold text-center text-indigo-800 mb-2">เลือกรูปแบบรายงาน AI</p>
                                 <div class="grid grid-cols-2 gap-2">
-                                     <button id="generateAITextBtn" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                     <button id="generateAITextBtn" class="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
                                         แบบข้อความ
                                      </button>
-                                     <button id="generateAIInfographicBtn" class="w-full px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+                                     <button id="generateAIInfographicBtn" class="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
                                         แบบ Infographic
                                      </button>
                                 </div>
@@ -1941,7 +2436,7 @@
                 return report.trim();
             }
 
-            function setupAndOpenCommonAreaReportModal() {
+            function setupAndOpenCommonAreaReportModal(triggerElement) {
                 const rawText = prepareCommonAreaReportText();
                 const today = new Date();
                 const dateString = `${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear() + 543}`;
@@ -1975,7 +2470,7 @@
                 </div>`;
 
                 document.getElementById('downloadInfographicBtn').addEventListener('click', () => downloadInfographic('infographic-output', 'downloadInfographicBtn'));
-                openModal('reportModal');
+                openModal('reportModal', triggerElement);
                 runAIAnalysis(payload, (jsonText) => {
                     try {
                         const aiData = JSON.parse(jsonText);
@@ -2200,12 +2695,20 @@
 
             function bindEventListeners() {
                 let clearDataConfirmationStep = 0;
+                
+                // Splash Screen Nav
+                document.getElementById('nav-residential').addEventListener('click', () => enterAppView('residential'));
+                document.getElementById('nav-common-area').addEventListener('click', () => enterAppView('common'));
+                
+                // Main App Nav
+                document.getElementById('home-btn').addEventListener('click', backToSplash);
 
                 document.getElementById('closeModalBtn').addEventListener('click', () => closeModal('updateModal'));
                 document.getElementById('saveProgressBtn').addEventListener('click', saveProgress);
                 
-                document.getElementById('clearDataBtn').addEventListener('click', () => {
+                document.getElementById('clearDataBtn').addEventListener('click', (e) => {
                     const CONFIRM_COUNT = 5;
+                    const triggerElement = e.currentTarget;
                     
                     const executeClear = async () => {
                         const initialData = generateInitialDataObject();
@@ -2237,7 +2740,8 @@
                             showConfirmModal(
                                 'ยืนยันการล้างข้อมูล',
                                 message,
-                                askForConfirmation
+                                askForConfirmation,
+                                triggerElement
                             );
                         }
                     };
@@ -2261,8 +2765,8 @@
                 document.getElementById('exportDataBtn').addEventListener('click', exportData);
                 document.getElementById('import-file').addEventListener('change', importData);
                 document.getElementById('captureBtn').addEventListener('click', captureForLine);
-                document.getElementById('openReportModalBtn').addEventListener('click', setupAndOpenReportModal);
-                document.getElementById('openCommonAreaReportModalBtn').addEventListener('click', setupAndOpenCommonAreaReportModal);
+                document.getElementById('openReportModalBtn').addEventListener('click', e => setupAndOpenReportModal(e.currentTarget));
+                document.getElementById('openCommonAreaReportModalBtn').addEventListener('click', e => setupAndOpenCommonAreaReportModal(e.currentTarget));
                 document.getElementById('closeReportModalBtn').addEventListener('click', () => closeModal('reportModal'));
                 document.getElementById('notificationOkBtn').addEventListener('click', () => closeModal('notificationModal'));
                 
@@ -2274,11 +2778,14 @@
 
                 const viewResidentialBtn = document.getElementById('view-residential-btn');
                 const viewCommonBtn = document.getElementById('view-common-btn');
+                const viewQCSummaryBtn = document.getElementById('view-qc-summary-btn');
+
                 viewResidentialBtn.addEventListener('click', () => {
                     if (currentView === 'residential') return;
                     currentView = 'residential';
                     viewResidentialBtn.classList.add('active');
                     viewCommonBtn.classList.remove('active');
+                    viewQCSummaryBtn.classList.remove('active');
                     renderTable();
                 });
                 viewCommonBtn.addEventListener('click', () => {
@@ -2286,6 +2793,15 @@
                     currentView = 'common';
                     viewCommonBtn.classList.add('active');
                     viewResidentialBtn.classList.remove('active');
+                    viewQCSummaryBtn.classList.remove('active');
+                    renderTable();
+                });
+                viewQCSummaryBtn.addEventListener('click', () => {
+                    if (currentView === 'qc_summary') return;
+                    currentView = 'qc_summary';
+                    viewQCSummaryBtn.classList.add('active');
+                    viewResidentialBtn.classList.remove('active');
+                    viewCommonBtn.classList.remove('active');
                     renderTable();
                 });
 
@@ -2302,6 +2818,7 @@
                 
                 const mainTable = document.getElementById('main-table');
                 mainTable.addEventListener('mousedown', (e) => {
+                    if (currentView === 'qc_summary') return;
                     const cell = e.target.closest('.table-cell');
                     if (!cell) return;
                     e.preventDefault();
@@ -2340,4 +2857,3 @@
     </script>
 </body>
 </html>
-
