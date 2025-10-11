@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -236,16 +237,229 @@
         .splash-nav-card h3 {
              text-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
+        
+        /* QUICK UPDATE MODE - iOS Redesign */
+        #quick-update-mode-container.ios-style {
+            background-color: #f2f2f7; /* iOS grouped table view background */
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            color: #1c1c1e;
+        }
+
+        .ios-nav-bar {
+            background-color: rgba(247, 247, 247, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+            flex-shrink: 0;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            position: relative;
+            height: 60px;
+        }
+        .ios-back-button {
+            color: #007aff;
+            display: flex;
+            align-items: center;
+            font-size: 1.05rem;
+            font-weight: 500;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0.5rem 0;
+            position: absolute;
+            left: 1rem;
+        }
+        .ios-back-button svg {
+            width: 1.5rem;
+            height: 1.5rem;
+            margin-right: -4px;
+        }
+        .ios-nav-title {
+            text-align: center;
+            flex-grow: 1;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .ios-selector-container {
+            padding: 0.75rem 1rem;
+            flex-shrink: 0;
+        }
+        .ios-segmented-control {
+            display: flex;
+            width: 100%;
+            background-color: #7676801f; /* Gray 5 */
+            border-radius: 0.7rem;
+            padding: 3px;
+        }
+        .ios-segmented-control button {
+            flex: 1;
+            border: none;
+            background: none;
+            padding: 0.5rem 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #3c3c43;
+            border-radius: 0.5rem;
+            transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+            cursor: pointer;
+        }
+        .ios-segmented-control button.active {
+            background-color: white;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.12), 0 3px 1px rgba(0,0,0,0.04);
+        }
+
+        .ios-room-selector-container {
+            display: flex;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 0.75rem 1rem;
+        }
+        .ios-room-selector-container::-webkit-scrollbar { display: none; }
+        .ios-room-selector-container button {
+            flex-shrink: 0;
+            cursor: pointer;
+            padding: 0.5rem 1.1rem;
+            border-radius: 9999px;
+            border: none;
+            font-weight: 500;
+            color: #007aff;
+            background-color: transparent;
+            margin: 0 0.25rem;
+            transition: all 0.2s ease-in-out;
+            font-size: 0.95rem;
+            position: relative;
+        }
+        .ios-room-selector-container button.has-progress-indicator::after {
+            content: '';
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            width: 6px;
+            height: 6px;
+            background-color: #007aff;
+            border-radius: 50%;
+        }
+        .ios-room-selector-container button.active {
+            background-color: #007aff;
+            color: white;
+        }
+        .ios-room-selector-container button.active.has-progress-indicator::after {
+            background-color: white;
+        }
+
+
+        #quick-update-task-list.ios-style {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 0 1rem;
+        }
+        .ios-inset-grouped-table {
+            background-color: white;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        .ios-table-header {
+            color: #6d6d72; /* Gray */
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            padding: 1.5rem 1rem 0.5rem;
+        }
+        .ios-table-cell {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.9rem 1rem;
+            margin-left: 1rem;
+            border-bottom: 1px solid #c6c6c845; /* Separator with opacity */
+            position: relative;
+            cursor: pointer;
+        }
+        .ios-inset-grouped-table .ios-table-cell:last-child {
+            border-bottom: none;
+        }
+        .ios-table-cell .task-name {
+            font-size: 1.05rem;
+        }
+        .ios-table-cell .task-status {
+            font-size: 1rem;
+            color: #3c3c4399; /* Label secondary */
+        }
+        .ios-disclosure-indicator {
+            width: 1.1rem;
+            height: 1.1rem;
+            color: #3c3c434d; /* Opaque separator */
+            margin-left: 0.5rem;
+        }
+
+        .ios-progress-control {
+            display: flex;
+            background-color: #7676801f;
+            border-radius: 0.6rem;
+            padding: 2px;
+            position: relative;
+            cursor: default;
+        }
+        .ios-progress-control .background-pill {
+            position: absolute;
+            top: 2px;
+            bottom: 2px;
+            width: calc((100% - 4px) / 6);
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .ios-progress-control button {
+            position: relative;
+            z-index: 1;
+            padding: 0.3rem 0.5rem;
+            border: none;
+            background: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #1c1c1e;
+            transition: color 0.3s ease;
+            flex: 1;
+            cursor: pointer;
+        }
+        .ios-progress-control button.inactive {
+            color: #3c3c4399;
+        }
+        
+        .ios-style .spinner-overlay {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(255,255,255,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ios-style .spinner-sm {
+             border: 3px solid #f3f3f3;
+             border-top: 3px solid #007aff;
+             border-radius: 50%;
+             width: 24px;
+             height: 24px;
+             animation: spin 1s linear infinite;
+        }
+
     </style>
 </head>
 <body class="p-2 md:p-4">
 
     <!-- Splash Screen -->
     <div id="splash-screen" class="min-h-screen flex items-center justify-center p-4">
-        <div class="w-full max-w-5xl mx-auto text-center">
-            <h1 class="text-4xl md:text-6xl font-extrabold text-slate-800 mb-2">Vay Chinnakhet</h1>
-            <p class="text-lg md:text-xl text-slate-600 mb-8 md:mb-12">ระบบติดตามความคืบหน้าโครงการ</p>
-
+        <div class="w-full max-w-5xl mx-auto">
+            <div class="text-center">
+                <h1 class="text-4xl md:text-6xl font-extrapold text-slate-800 mb-2">Vay Chinnakhet</h1>
+                <p class="text-lg md:text-xl text-slate-600 mb-8 md:mb-12">ระบบติดตามความคืบหน้าโครงการ</p>
+            </div>
             <!-- Summary Dashboard -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 md:mb-12">
                 <!-- Overall Progress -->
@@ -272,20 +486,23 @@
             </div>
 
             <!-- Navigation -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div id="nav-residential" class="splash-nav-card cursor-pointer p-8 md:p-12 rounded-2xl shadow-xl text-white flex flex-col items-center justify-center" style="background-image: linear-gradient(to right, #43e97b 0%, #38f9d7 51%, #43e97b 100%);">
-                     <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m5-8h1m-1 4h1m-1 4h1M5 21v-3a2 2 0 012-2h10a2 2 0 012 2v3" /></svg>
-                    <h3 class="text-xl md:text-2xl font-bold">เข้าสู่ระบบติดตาม (ห้องพัก)</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                <div id="nav-residential" class="splash-nav-card cursor-pointer p-8 md:p-10 rounded-2xl shadow-xl text-white flex flex-col items-center justify-center" style="background-image: linear-gradient(to right, #43e97b 0%, #38f9d7 51%, #43e97b 100%);">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m5-8h1m-1 4h1m-1 4h1M5 21v-3a2 2 0 012-2h10a2 2 0 012 2v3" /></svg>
+                    <h3 class="text-xl font-bold">ระบบติดตาม (ห้องพัก)</h3>
                 </div>
-                <div id="nav-common-area" class="splash-nav-card cursor-pointer p-8 md:p-12 rounded-2xl shadow-xl text-white flex flex-col items-center justify-center" style="background-image: linear-gradient(to right, #89f7fe 0%, #66a6ff 51%, #89f7fe 100%);">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
-                    <h3 class="text-xl md:text-2xl font-bold">เข้าสู่ระบบติดตาม (ส่วนกลาง)</h3>
+                 <div id="nav-quick-update" class="splash-nav-card cursor-pointer p-8 md:p-10 rounded-2xl shadow-xl text-white flex flex-col items-center justify-center" style="background-image: linear-gradient(to right, #ff8177 0%, #ff867a 0%, #ff8c7f 21%, #f99185 52%, #cf556c 78%, #b12a5b 100%);">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                    <h3 class="text-xl font-bold">โหมดอัพเดทหน้างาน</h3>
+                </div>
+                <div id="nav-common-area" class="splash-nav-card cursor-pointer p-8 md:p-10 rounded-2xl shadow-xl text-white flex flex-col items-center justify-center" style="background-image: linear-gradient(to right, #89f7fe 0%, #66a6ff 51%, #89f7fe 100%);">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
+                    <h3 class="text-xl font-bold">ระบบติดตาม (ส่วนกลาง)</h3>
                 </div>
             </div>
-             <p id="splash-loading-text" class="mt-8 text-slate-500">กำลังเชื่อมต่อฐานข้อมูล...</p>
+             <p id="splash-loading-text" class="mt-8 text-slate-500 text-center">กำลังเชื่อมต่อฐานข้อมูล...</p>
         </div>
     </div>
-
 
     <!-- Main Application Container -->
     <div id="main-app-container" class="hidden">
@@ -428,7 +645,7 @@
                 </div>
             </div>
         </div>
-
+        
         <!-- Report Generator & AI Modal -->
         <div id="reportModal" class="modal fixed inset-0 w-full h-full items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
             <div class="bg-white rounded-lg shadow-xl w-full max-w-7xl h-[95vh] flex flex-col">
@@ -468,6 +685,26 @@
             </div>
         </div>
     </div> <!-- END of main-app-container -->
+    
+    <!-- Quick Update Mode Container -->
+    <div id="quick-update-mode-container" class="hidden">
+        <header class="ios-nav-bar">
+             <button id="quick-update-home-btn" class="ios-back-button" title="กลับสู่หน้าหลัก">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+                <span>หน้าหลัก</span>
+             </button>
+            <h1 class="ios-nav-title">โหมดอัพเดทหน้างาน</h1>
+        </header>
+        
+        <div class="ios-selector-container">
+            <div id="quick-update-floor-selector-container"></div>
+            <div id="quick-update-room-selector-container" class="ios-room-selector-container"></div>
+        </div>
+        
+        <main id="quick-update-task-list">
+             <!-- JS Generated Task List -->
+        </main>
+    </div>
 
 
     <!-- Toast Notification -->
@@ -543,6 +780,7 @@
             let currentView = 'residential';
             let currentCategory = 'skimAndPaint';
             let currentDetailedView = 'summary';
+            let currentQuickUpdateRoom = { floor: null, room: null };
             let isSelecting = false;
             let selectedCells = new Set();
             let confirmCallback = null;
@@ -610,6 +848,8 @@
                             if(!document.getElementById('main-app-container').classList.contains('hidden')) {
                                 renderTable();
                                 highlightChanges(oldData, projectData);
+                            } else if (!document.getElementById('quick-update-mode-container').classList.contains('hidden')) {
+                                renderQuickUpdateTaskList(); // Also update quick update mode if it's active
                             }
                             renderSplashScreen();
                             showToast("ข้อมูลถูกอัพเดทโดยผู้ใช้อื่น", 2500);
@@ -619,7 +859,7 @@
                         if (status === 'SUBSCRIBED') {
                              splashLoadingText.textContent = `เชื่อมต่อ Real-time สำเร็จ!`;
                              setTimeout(() => {
-                                 if (document.getElementById('main-app-container').classList.contains('hidden')) {
+                                 if (document.getElementById('main-app-container').classList.contains('hidden') && document.getElementById('quick-update-mode-container').classList.contains('hidden')) {
                                      splashLoadingText.textContent = `ข้อมูลล่าสุด ณ ${new Date().toLocaleTimeString('th-TH')}`;
                                  }
                              }, 2000);
@@ -780,6 +1020,7 @@
             function enterAppView(view) {
                 document.getElementById('splash-screen').classList.add('hidden');
                 document.getElementById('main-app-container').classList.remove('hidden');
+                document.getElementById('quick-update-mode-container').classList.add('hidden');
                 currentView = view;
                 
                 const resBtn = document.getElementById('view-residential-btn');
@@ -793,8 +1034,20 @@
                 renderTable();
             }
 
+            function enterQuickUpdateMode() {
+                const quickUpdateContainer = document.getElementById('quick-update-mode-container');
+                document.getElementById('splash-screen').classList.add('hidden');
+                document.getElementById('main-app-container').classList.add('hidden');
+                quickUpdateContainer.classList.remove('hidden');
+                quickUpdateContainer.classList.add('ios-style');
+                document.getElementById('quick-update-task-list').classList.add('ios-style');
+                setupQuickUpdateSelectors();
+                renderQuickUpdateTaskList();
+            }
+            
             function backToSplash() {
                 document.getElementById('main-app-container').classList.add('hidden');
+                document.getElementById('quick-update-mode-container').classList.add('hidden');
                 document.getElementById('splash-screen').classList.remove('hidden');
                 renderSplashScreen(); // Re-render in case of updates
             }
@@ -829,7 +1082,7 @@
                 }
                 updateUI();
             }
-
+            
             function renderCommonAreaTable() {
                 const mainTable = document.getElementById('main-table');
                 mainTable.innerHTML = '';
@@ -995,8 +1248,19 @@
                                     cellText = 'ตรวจสอบ';
                                 } else {
                                     let scoreToShow = 0, defectToShow = false, stageLabel = '';
-                                    if (unitData.qcScore > 0) { scoreToShow = unitData.qcScore; defectToShow = unitData.qcHasMajorDefect; stageLabel = 'QC: '; } 
-                                    else if (unitData.cmScore > 0) { scoreToShow = unitData.cmScore; defectToShow = unitData.cmHasMajorDefect; stageLabel = 'CM: '; }
+                                    if (unitData.qcScore > 0 && unitData.qcScore === unitData.cmScore) {
+                                        scoreToShow = unitData.qcScore;
+                                        defectToShow = unitData.qcHasMajorDefect;
+                                        stageLabel = 'QC-CM: ';
+                                    } else if (unitData.qcScore > 0) {
+                                        scoreToShow = unitData.qcScore;
+                                        defectToShow = unitData.qcHasMajorDefect;
+                                        stageLabel = 'QC: ';
+                                    } else if (unitData.cmScore > 0) {
+                                        scoreToShow = unitData.cmScore;
+                                        defectToShow = unitData.cmHasMajorDefect;
+                                        stageLabel = 'CM: ';
+                                    }
                                     if (scoreToShow > 0) styleClasses = scoreToShow >= 85 ? 'bg-teal-500 text-white' : 'bg-rose-500 text-white';
                                     cellText = scoreToShow > 0 ? `${stageLabel}${Number.isInteger(scoreToShow) ? scoreToShow : scoreToShow.toFixed(2)}` : '0';
                                     if (defectToShow) cellText += '!';
@@ -1663,6 +1927,239 @@
                 }
             }
             
+            // --- QUICK UPDATE MODE FUNCTIONS ---
+            function setupQuickUpdateSelectors() {
+                const floorSelectorContainer = document.getElementById('quick-update-floor-selector-container');
+                floorSelectorContainer.innerHTML = '';
+                const segmentedControl = document.createElement('div');
+                segmentedControl.className = 'ios-segmented-control';
+
+                CONFIG.FLOORS.forEach(floor => {
+                    const button = document.createElement('button');
+                    button.textContent = `ชั้น ${floor}`;
+                    button.dataset.floor = floor;
+                    segmentedControl.appendChild(button);
+                });
+                floorSelectorContainer.appendChild(segmentedControl);
+                
+                if (currentQuickUpdateRoom.floor) {
+                    const activeBtn = floorSelectorContainer.querySelector(`[data-floor="${currentQuickUpdateRoom.floor}"]`);
+                    if (activeBtn) {
+                        activeBtn.classList.add('active');
+                        populateQuickUpdateRoomPills(currentQuickUpdateRoom.floor);
+                    }
+                } else {
+                     populateQuickUpdateRoomPills(null);
+                }
+            }
+
+            function doesRoomHaveProgress(floor, room) {
+                if (!projectData || !floor || !room) return false;
+                for (const catKey in taskDefinitions) {
+                    const catDef = taskDefinitions[catKey];
+                    const unitData = projectData[catKey]?.[floor]?.[room];
+                    if (!unitData) continue;
+
+                    if (catDef.type === 'progress') {
+                        if ((unitData.progress || 0) > 0) return true;
+                    } else if (catDef.type === 'multi-progress') {
+                        for (const task of catDef.tasks) {
+                            if ((unitData[`progress_${task.key}`] || 0) > 0) return true;
+                        }
+                    } else if (catDef.type === 'inspection') {
+                        if ((unitData.cmScore || 0) > 0 || (unitData.qcScore || 0) > 0 || unitData.inInspection) return true;
+                    }
+                }
+                return false;
+            }
+            
+            function populateQuickUpdateRoomPills(floor) {
+                 const roomPillsContainer = document.getElementById('quick-update-room-selector-container');
+                 roomPillsContainer.innerHTML = '';
+                 if (!floor) {
+                    roomPillsContainer.innerHTML = `<p class="text-sm text-slate-500 px-1 py-2">กรุณาเลือกชั้นก่อน</p>`;
+                    return;
+                 }
+                 const roomsOnThisFloor = (parseInt(floor, 10) === 2) ? CONFIG.ROOMS_ON_FLOOR_2 : CONFIG.ROOMS_PER_FLOOR;
+                 for(let i = 1; i <= roomsOnThisFloor; i++) {
+                     const button = document.createElement('button');
+                     button.textContent = `ห้อง ${i}`;
+                     button.dataset.room = i;
+                     if (doesRoomHaveProgress(floor, i)) {
+                        button.classList.add('has-progress-indicator');
+                     }
+                     roomPillsContainer.appendChild(button);
+                 }
+
+                 if (currentQuickUpdateRoom.room) {
+                     const activePill = roomPillsContainer.querySelector(`[data-room="${currentQuickUpdateRoom.room}"]`);
+                     if (activePill) activePill.classList.add('active');
+                 }
+            }
+
+            function renderQuickUpdateTaskList() {
+                const taskListContainer = document.getElementById('quick-update-task-list');
+                const { floor, room } = currentQuickUpdateRoom;
+                
+                if(!floor || !room) {
+                    taskListContainer.innerHTML = `<div class="text-center text-slate-500 p-8 mt-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                        <h3 class="mt-2 text-lg font-semibold">เริ่มต้นอัพเดท</h3>
+                        <p class="mt-1 text-base text-gray-500">กรุณาเลือกชั้นและห้องจากด้านบน</p>
+                    </div>`;
+                    return;
+                }
+                
+                const progressSteps = [0, 20, 40, 60, 80, 100];
+                let html = '';
+                Object.keys(taskDefinitions).forEach((catKey) => {
+                    const catDef = taskDefinitions[catKey];
+                    const unitData = projectData[catKey]?.[floor]?.[room] || {};
+
+                    html += `<div class="ios-inset-grouped-table">`;
+                    html += `<div class="ios-table-header">${catDef.name}</div>`;
+                    
+                    const createProgressControl = (currentProgress) => {
+                        const pillIndex = progressSteps.indexOf(currentProgress) > -1 ? progressSteps.indexOf(currentProgress) : 0;
+                        const pillTransform = `translateX(${pillIndex * 100}%)`;
+                        const buttons = progressSteps.map(p => `<button data-progress="${p}" class="${currentProgress !== p ? 'inactive' : ''}">${p}%</button>`).join('');
+                        
+                        return `<div class="ios-progress-control">
+                                    <div class="background-pill" style="transform: ${pillTransform};"></div>
+                                    ${buttons}
+                                </div>`;
+                    };
+                    
+                    if (catDef.type === 'progress') {
+                        catDef.tasks.forEach((task, index) => {
+                             const isCompleted = unitData.taskIndex > index || (unitData.taskIndex === index && unitData.progress >= 100);
+                             const btnProgress = isCompleted ? 100 : (unitData.taskIndex === index ? (unitData.progress || 0) : 0);
+                             
+                             html += `<div class="ios-table-cell" data-catkey="${catKey}" data-taskidx="${index}">
+                                        <p class="task-name">${task.name}</p>
+                                        ${createProgressControl(btnProgress)}
+                                     </div>`;
+                        });
+                    } else if (catDef.type === 'multi-progress') {
+                         catDef.tasks.forEach(task => {
+                             const progress = unitData[`progress_${task.key}`] || 0;
+                              html += `<div class="ios-table-cell" data-catkey="${catKey}" data-taskkey="${task.key}">
+                                        <p class="task-name">${task.name}</p>
+                                        ${createProgressControl(progress)}
+                                     </div>`;
+                         });
+                    } else if (catDef.type === 'inspection') {
+                         let statusText = 'ยังไม่ตรวจ';
+                         let statusClass = 'text-gray-500';
+                         if (unitData.inInspection) {
+                             statusText = 'อยู่ระหว่างตรวจสอบ';
+                             statusClass = 'text-yellow-600 font-semibold';
+                         } else if (unitData.qcScore > 0) {
+                             statusText = `QC: ${unitData.qcScore >= 85 ? 'ผ่าน' : 'ไม่ผ่าน'} (${unitData.qcScore})`;
+                             statusClass = unitData.qcScore >= 85 ? 'text-green-600 font-bold' : 'text-red-600 font-bold';
+                         } else if (unitData.cmScore > 0) {
+                             statusText = `CM: ${unitData.cmScore >= 85 ? 'ผ่าน' : 'ไม่ผ่าน'} (${unitData.cmScore})`;
+                             statusClass = unitData.cmScore >= 85 ? 'text-green-600 font-bold' : 'text-red-600 font-bold';
+                         }
+                         html += `<div class="ios-table-cell" data-catkey="${catKey}">
+                                    <p class="task-name">ผลการตรวจสอบ</p>
+                                    <div class="flex items-center">
+                                         <p class="task-status ${statusClass}">${statusText}</p>
+                                         <svg xmlns="http://www.w3.org/2000/svg" class="ios-disclosure-indicator" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+                                    </div>
+                                  </div>`;
+                    }
+                    html += `</div>`; // end of ios-inset-grouped-table
+                });
+
+                taskListContainer.innerHTML = html;
+            }
+
+            async function handleQuickUpdate(e) {
+                const subTaskContainer = e.target.closest('[data-catkey]');
+                if (!subTaskContainer) return;
+                
+                const { floor, room } = currentQuickUpdateRoom;
+                if (!floor || !room) return;
+
+                const catKey = subTaskContainer.dataset.catkey;
+                const catDef = taskDefinitions[catKey];
+                
+                // If it's an inspection task, the whole cell is the trigger to open the modal.
+                if (catDef.type === 'inspection') {
+                    selectedCells.clear();
+                    // Create a dummy cell object to pass to the modal logic
+                    const dummyCell = document.createElement('td');
+                    dummyCell.dataset.floor = floor;
+                    dummyCell.dataset.room = room;
+                    selectedCells.add(dummyCell);
+                    currentCategory = catKey; // Temporarily set context for the modal
+                    openResidentialUpdateModal();
+                    return;
+                }
+
+                // For progress controls, ensure a button was the target
+                const button = e.target.closest('button');
+                if (!button) return;
+                
+                // Show spinner
+                const spinnerOverlay = document.createElement('div');
+                spinnerOverlay.className = 'spinner-overlay';
+                spinnerOverlay.innerHTML = '<div class="spinner-sm"></div>';
+                subTaskContainer.appendChild(spinnerOverlay);
+
+                const updatedData = JSON.parse(JSON.stringify(projectData));
+                const unitData = updatedData[catKey][floor][room];
+                
+                if (catDef.type === 'progress') {
+                    const taskIndex = parseInt(subTaskContainer.dataset.taskidx, 10);
+                    const progress = parseInt(button.dataset.progress, 10);
+                    
+                    // Logic to update other sub-tasks in the same category
+                    if (progress === 100) { // If completing this task
+                        for (let i=0; i < taskIndex; i++) { // complete all previous tasks
+                            if (updatedData[catKey][floor][room].taskIndex <= i) {
+                                updatedData[catKey][floor][room].taskIndex = i;
+                                updatedData[catKey][floor][room].progress = 100;
+                            }
+                        }
+                    } else if (progress === 0) { // If clearing this task
+                         for (let i = catDef.tasks.length - 1; i >= taskIndex; i--) { // clear this and all subsequent tasks
+                            if (updatedData[catKey][floor][room].taskIndex >= i) {
+                                updatedData[catKey][floor][room].taskIndex = i;
+                                updatedData[catKey][floor][room].progress = 0;
+                            }
+                         }
+                    }
+                    unitData.taskIndex = taskIndex;
+                    unitData.progress = progress;
+
+                } else if (catDef.type === 'multi-progress') {
+                     const taskKey = subTaskContainer.dataset.taskkey;
+                     const progress = parseInt(button.dataset.progress, 10);
+                     unitData[`progress_${taskKey}`] = progress;
+                }
+
+                try {
+                    const { error } = await supabaseClient
+                        .from(CONFIG.DB_TABLE_NAME)
+                        .update({ data: updatedData })
+                        .eq('id', CONFIG.DB_ROW_ID);
+                    if (error) throw error;
+                    showToast(`${catDef.name} ของห้อง ${floor}/${room} ถูกอัพเดทแล้ว`);
+                } catch (error) {
+                    console.error("Quick update failed:", error);
+                    showNotificationModal("เกิดข้อผิดพลาด", "ไม่สามารถบันทึกข้อมูลได้");
+                    // Re-render to revert optimistic UI changes
+                    renderQuickUpdateTaskList();
+                } finally {
+                    // The realtime listener will handle the re-render, so we just remove the spinner
+                     if(subTaskContainer.contains(spinnerOverlay)) {
+                        subTaskContainer.removeChild(spinnerOverlay);
+                    }
+                }
+            }
+            
             function exportData() {
                 try {
                     const dataStr = JSON.stringify(projectData, null, 2);
@@ -2103,7 +2600,7 @@
             }
             
             function calculateInspectionStats(categoryKey, stage, floorsToCalc) {
-                let submitted = 0, passed_clean = 0, passed_defect = 0, failed_clean = 0, failed_defect = 0;
+                let submitted = 0, passed_clean = 0, passed_defect = 0, failed_clean = 0, failed_defect = 0, inInspection = 0;
                 let totalRooms = 0;
                 const scoreField = stage === 'CM' ? 'cmScore' : 'qcScore';
                 const defectField = stage === 'CM' ? 'cmHasMajorDefect' : 'qcHasMajorDefect';
@@ -2112,6 +2609,9 @@
                     totalRooms += roomsOnThisFloor;
                     for (let room = 1; room <= roomsOnThisFloor; room++) {
                         const unitData = projectData[categoryKey][floor][room];
+                        if (unitData.inInspection) {
+                            inInspection++;
+                        }
                         if (unitData[scoreField] > 0) {
                             submitted++;
                             if (unitData[scoreField] >= 85) {
@@ -2122,7 +2622,7 @@
                         }
                     }
                  });
-                return { submitted, passed_clean, passed_defect, failed_clean, failed_defect, totalRooms };
+                return { submitted, passed_clean, passed_defect, failed_clean, failed_defect, totalRooms, inInspection };
             }
 
             async function runAIAnalysis(payload, renderer) {
@@ -2326,16 +2826,30 @@
                     let categorySection = `\n${catDef.reportEmoji} ${catDef.reportName}\n`;
                     if (catDef.type === 'inspection') {
                         const total = isSummary ? CONFIG.TOTAL_UNITS : floorsToCalc.reduce((acc, f) => acc + ((f===2) ? CONFIG.ROOMS_ON_FLOOR_2 : CONFIG.ROOMS_PER_FLOOR), 0);
-                        ['CM', 'QC'].forEach(stage => {
-                             const stats = calculateInspectionStats(catKey, stage, floorsToCalc);
-                             const passed_total = stats.passed_clean + stats.passed_defect;
-                             const failed_total = stats.failed_clean + stats.failed_defect;
-                             categorySection += `  **${stage}**:\n`;
-                             categorySection += `     • ส่งตรวจแล้ว: ${stats.submitted}/${total} ห้อง\n`;
-                             categorySection += `     • ผลการตรวจ:\n`;
-                             categorySection += `       - ผ่าน: ${passed_total} ห้อง (พบ Major Defect: ${stats.passed_defect} ห้อง)\n`;
-                             categorySection += `       - ไม่ผ่าน: ${failed_total} ห้อง (พบ Major Defect: ${stats.failed_defect} ห้อง)\n`;
-                        });
+                        const stage = 'QC'; // Only process QC
+                        const stats = calculateInspectionStats(catKey, stage, floorsToCalc);
+                        const passed_total = stats.passed_clean + stats.passed_defect;
+                        const failed_total = stats.failed_clean + stats.failed_defect;
+
+                        let passLine = `       - ผ่าน: ${passed_total} ห้อง`;
+                        if (stats.passed_defect > 0) {
+                            passLine += ` (พบ Major Defect: ${stats.passed_defect} ห้อง)`;
+                        }
+
+                        let failLine = `       - ไม่ผ่าน: ${failed_total} ห้อง`;
+                        if (stats.failed_defect > 0) {
+                            failLine += ` (พบ Major Defect: ${stats.failed_defect} ห้อง)`;
+                        }
+                        
+                        categorySection += `  **${stage}**:\n`;
+                        categorySection += `     • ส่งตรวจแล้ว: ${stats.submitted}/${total} ห้อง\n`;
+                        if (stats.inInspection > 0) {
+                            categorySection += `     • อยู่ระหว่างตรวจสอบ: ${stats.inInspection} ห้อง\n`;
+                        }
+                        categorySection += `     • ผลการตรวจ:\n`;
+                        categorySection += `${passLine}\n`;
+                        categorySection += `${failLine}\n`;
+
                     } else if (catDef.type === 'multi-progress') {
                         const overallProgress = calculateMultiProgressOverallPercentage(catKey, floorsToCalc, tasks[catKey]);
                         const stats = calculateMultiProgressOverallStatus(catKey, floorsToCalc, tasks[catKey]);
@@ -2699,9 +3213,11 @@
                 // Splash Screen Nav
                 document.getElementById('nav-residential').addEventListener('click', () => enterAppView('residential'));
                 document.getElementById('nav-common-area').addEventListener('click', () => enterAppView('common'));
+                document.getElementById('nav-quick-update').addEventListener('click', enterQuickUpdateMode);
                 
                 // Main App Nav
                 document.getElementById('home-btn').addEventListener('click', backToSplash);
+                document.getElementById('quick-update-home-btn').addEventListener('click', backToSplash);
 
                 document.getElementById('closeModalBtn').addEventListener('click', () => closeModal('updateModal'));
                 document.getElementById('saveProgressBtn').addEventListener('click', saveProgress);
@@ -2769,6 +3285,7 @@
                 document.getElementById('openCommonAreaReportModalBtn').addEventListener('click', e => setupAndOpenCommonAreaReportModal(e.currentTarget));
                 document.getElementById('closeReportModalBtn').addEventListener('click', () => closeModal('reportModal'));
                 document.getElementById('notificationOkBtn').addEventListener('click', () => closeModal('notificationModal'));
+
                 
                 document.getElementById('task-category').addEventListener('change', (e) => {
                     currentCategory = e.target.value;
@@ -2816,6 +3333,7 @@
                     renderTable();
                 });
                 
+
                 const mainTable = document.getElementById('main-table');
                 mainTable.addEventListener('mousedown', (e) => {
                     if (currentView === 'qc_summary') return;
@@ -2841,6 +3359,34 @@
                         if (selectedCells.size > 0) openUpdateModal(selectedCells.values().next().value);
                     }
                 });
+                
+                // Quick Update Mode Listeners
+                 document.getElementById('quick-update-floor-selector-container').addEventListener('click', e => {
+                    const button = e.target.closest('button');
+                    if (!button) return;
+                    const floor = button.dataset.floor;
+                    
+                    document.querySelectorAll('#quick-update-floor-selector-container button').forEach(p => p.classList.remove('active'));
+                    button.classList.add('active');
+
+                    currentQuickUpdateRoom.floor = parseInt(floor, 10);
+                    currentQuickUpdateRoom.room = null; // Reset room when floor changes
+                    populateQuickUpdateRoomPills(floor);
+                    renderQuickUpdateTaskList();
+                });
+
+                document.getElementById('quick-update-room-selector-container').addEventListener('click', e => {
+                     const button = e.target.closest('button');
+                     if (!button) return;
+                     const room = button.dataset.room;
+                     
+                     document.querySelectorAll('#quick-update-room-selector-container button').forEach(p => p.classList.remove('active'));
+                     button.classList.add('active');
+
+                     currentQuickUpdateRoom.room = parseInt(room, 10);
+                     renderQuickUpdateTaskList();
+                });
+                document.getElementById('quick-update-task-list').addEventListener('click', handleQuickUpdate);
             }
 
             // --- INITIALIZATION ---
