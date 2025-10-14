@@ -762,6 +762,7 @@
                 tiling: { name: 'งานปูกระเบื้อง', reportName: 'งานปูกระเบื้อง', reportEmoji: '🟧', title: 'STATUS งานปูกระเบื้อง', type: 'multi-progress', hasDetailedView: true, tasks: [ { name: 'ห้องน้ำ', key: 'bathroom', shortName: 'น้ำ', color: 'bg-teal-500', textColor: 'text-white' }, { name: 'ระเบียง', key: 'balcony', shortName: 'รบ.', color: 'bg-lime-600', textColor: 'text-white' }, { name: 'ครัว', key: 'kitchen', shortName: 'ครัว', color: 'bg-rose-500', textColor: 'text-white' } ] },
                 door: { name: 'งานติดตั้งประตูไม้', reportName: 'งานติดตั้งประตูไม้', reportEmoji: '🚪', title: 'STATUS งานติดตั้งประตูไม้', type: 'multi-progress', tasks: [ { name: 'ประตูหน้า', key: 'front', shortName: 'หน้า', color: 'bg-amber-600', textColor: 'text-white' }, { name: 'ประตูห้องน้ำ', key: 'bathroom', shortName: 'น้ำ', color: 'bg-blue-400', textColor: 'text-white' }, { name: 'อุปกรณ์ประตู', key: 'hardware', shortName: 'อปก.', color: 'bg-green-500', textColor: 'text-white' } ] },
                 aluminum: { name: 'งานติดตั้งอลูมิเนียม', reportName: 'งานติดตั้งอลูมิเนียม', reportEmoji: '🪟', title: 'STATUS งานติดตั้งอลูมิเนียม', type: 'multi-progress', hasDetailedView: true, tasks: [ { name: 'บานกั้นห้อง', key: 'partition', shortName: 'กั้น', color: 'bg-sky-400', textColor: 'text-white' }, { name: 'บานออกระเบียง', key: 'balcony', shortName: 'รบ.', color: 'bg-blue-400', textColor: 'text-white' }, { name: 'บานหน้าต่าง', key: 'window', shortName: 'นต.', color: 'bg-teal-400', textColor: 'text-white' } ] },
+                showerScreen: { name: 'งาน SHOWER SCREEN', reportName: 'งาน SHOWER SCREEN', reportEmoji: '🚿', title: 'STATUS งาน SHOWER SCREEN', type: 'progress', tasks: [ { name: 'ติดตั้ง', color: 'bg-sky-500', textColor: 'text-white' }, { name: 'เก็บงาน', color: 'bg-emerald-500', textColor: 'text-white' } ] },
                 wetWork: { name: 'WET WORK', reportName: 'WET WORK', reportEmoji: '💧', title: 'STATUS งาน WET WORK', type: 'inspection', tasks: [ { name: 'CM WW', color: 'bg-orange-400', textColor: 'text-white' }, { name: 'QC WW', color: 'bg-yellow-400', textColor: 'text-black' } ] },
                 endProduct: { name: 'END PRODUCT', reportName: 'END PRODUCT', reportEmoji: '✅', title: 'STATUS งาน END PRODUCT', type: 'inspection', tasks: [ { name: 'CM End', color: 'bg-rose-300', textColor: 'text-black' }, { name: 'QC End', color: 'bg-emerald-400', textColor: 'text-black' }, ] },
             };
@@ -1281,13 +1282,35 @@
                                      cellText += `<div class="sub-task-name absolute bottom-0 left-0 right-0 text-[8px] opacity-70 flex justify-center">${subText}</div>`;
                                  }
                             } else {
-                                 const progress = unitData.progress || 0;
-                                  const currentTask = categoryTasks[unitData.taskIndex || 0];
-                                  const isFinalTask = (unitData.taskIndex || 0) === categoryTasks.length - 1;
-                                  const isCompleted = isFinalTask && progress >= 100;
-                                  styleClasses = isCompleted ? 'bg-teal-500 text-white' : (progress >= 100 ? `${currentTask.color} ${currentTask.textColor}` : (progress > 0 ? getProgressColor(progress, currentTask.color) : 'bg-white text-black'));
-                                  cellText = `${progress}%`;
-                                  if(progress > 0 && !isCompleted) cellText += `<span class="sub-task-name absolute bottom-0 right-1 text-[8px] opacity-70">${currentTask.name}</span>`;
+                                  const progress = unitData.progress || 0;
+                                  const currentTaskIndex = unitData.taskIndex || 0;
+                                  // Ensure currentTask exists before trying to access its properties
+                                  if (categoryTasks[currentTaskIndex]) {
+                                      const currentTask = categoryTasks[currentTaskIndex];
+                                      const isFinalTask = currentTaskIndex === categoryTasks.length - 1;
+                                      const isCompleted = isFinalTask && progress >= 100;
+
+                                      // Determine style based on current task's progress
+                                      if (isCompleted) {
+                                          styleClasses = 'bg-teal-500 text-white';
+                                      } else if (progress >= 100 && !isFinalTask) {
+                                          // This task is done, but not the final one in the category
+                                          styleClasses = `${currentTask.color} ${currentTask.textColor}`;
+                                      } else if (progress > 0) {
+                                          styleClasses = getProgressColor(progress, currentTask.color);
+                                      } else {
+                                          styleClasses = 'bg-white text-black';
+                                      }
+
+                                      cellText = `${progress}%`;
+                                      if (progress > 0 && !isCompleted) {
+                                          cellText += `<span class="sub-task-name absolute bottom-0 right-1 text-[8px] opacity-70">${currentTask.name}</span>`;
+                                      }
+                                  } else {
+                                      // Handle cases where taskIndex might be out of bounds
+                                      cellText = 'N/A';
+                                      styleClasses = 'bg-gray-200 text-black';
+                                  }
                             }
                             const cell = document.createElement('td');
                             cell.className = `border p-2 table-cell ${styleClasses}`;
@@ -1331,9 +1354,14 @@
                             const floorCounts = Array(categoryTasks.length).fill(0);
                             for (let room = 1; room <= roomsOnThisFloor; room++) {
                                 const unitData = projectData[currentCategory]?.[floor]?.[room] || {};
-                                for (let i = 0; i < unitData.taskIndex; i++) floorCounts[i]++;
-                                if (unitData.progress > 0) floorCounts[unitData.taskIndex]++;
-                                if (unitData.taskIndex === categoryTasks.length - 1 && unitData.progress >= 100) floorCompleted++;
+                                for (let i = 0; i < (unitData.taskIndex || 0); i++) floorCounts[i]++;
+                                if (unitData.progress > 0) {
+                                    const currentTaskIndex = unitData.taskIndex || 0;
+                                    if(floorCounts[currentTaskIndex] !== undefined) {
+                                        floorCounts[currentTaskIndex]++;
+                                    }
+                                }
+                                if ((unitData.taskIndex || 0) === categoryTasks.length - 1 && unitData.progress >= 100) floorCompleted++;
                             }
                             floorCounts.forEach((count, i) => {
                                 row.innerHTML += `<td class="border p-2 summary-cell"><span>${count}</span></td>`;
@@ -1549,7 +1577,7 @@
                 document.getElementById('status-title').textContent = title;
                 
                 const tilingToggle = document.getElementById('tiling-view-toggle');
-                if (categoryDef.hasDetailedView && !isCommonView && !isQCSummaryView) {
+                if (categoryDef && categoryDef.hasDetailedView && !isCommonView && !isQCSummaryView) {
                     tilingToggle.classList.remove('hidden');
                     document.getElementById('view-tiling-summary-btn').classList.toggle('active', currentDetailedView === 'summary');
                     document.getElementById('view-tiling-detailed-btn').classList.toggle('active', currentDetailedView === 'detailed');
@@ -1580,6 +1608,7 @@
                 }
 
                 const categoryDef = taskDefinitions[currentCategory];
+                if (!categoryDef) return; // Guard against missing definition
 
                 if (categoryDef.hasDetailedView && currentDetailedView === 'detailed') {
                      categoryDef.tasks.forEach(task => {
@@ -1774,10 +1803,14 @@
                         taskSelect.value = 0;
                         progressInput.value = '';
                     } else {
-                        let taskToShowIndex = unitData.taskIndex;
-                        if (unitData.progress >= 100 && unitData.taskIndex < categoryTasks.length - 1) taskToShowIndex++;
+                        let taskToShowIndex = unitData.taskIndex || 0;
+                        let progressToShow = unitData.progress || 0;
+                        if (progressToShow >= 100 && taskToShowIndex < categoryTasks.length - 1) {
+                            taskToShowIndex++;
+                            progressToShow = 0;
+                        }
                         taskSelect.value = taskToShowIndex;
-                        progressInput.value = (taskToShowIndex === unitData.taskIndex) ? unitData.progress : 0;
+                        progressInput.value = progressToShow;
                     }
                 }
                 
@@ -2032,8 +2065,8 @@
                     
                     if (catDef.type === 'progress') {
                         catDef.tasks.forEach((task, index) => {
-                             const isCompleted = unitData.taskIndex > index || (unitData.taskIndex === index && unitData.progress >= 100);
-                             const btnProgress = isCompleted ? 100 : (unitData.taskIndex === index ? (unitData.progress || 0) : 0);
+                             const isCompleted = (unitData.taskIndex || 0) > index || ((unitData.taskIndex || 0) === index && (unitData.progress || 0) >= 100);
+                             const btnProgress = isCompleted ? 100 : ((unitData.taskIndex || 0) === index ? (unitData.progress || 0) : 0);
                              
                              html += `<div class="ios-table-cell" data-catkey="${catKey}" data-taskidx="${index}">
                                         <p class="task-name">${task.name}</p>
@@ -2118,14 +2151,14 @@
                     // Logic to update other sub-tasks in the same category
                     if (progress === 100) { // If completing this task
                         for (let i=0; i < taskIndex; i++) { // complete all previous tasks
-                            if (updatedData[catKey][floor][room].taskIndex <= i) {
+                            if ((updatedData[catKey][floor][room].taskIndex || 0) <= i) {
                                 updatedData[catKey][floor][room].taskIndex = i;
                                 updatedData[catKey][floor][room].progress = 100;
                             }
                         }
                     } else if (progress === 0) { // If clearing this task
                          for (let i = catDef.tasks.length - 1; i >= taskIndex; i--) { // clear this and all subsequent tasks
-                            if (updatedData[catKey][floor][room].taskIndex >= i) {
+                            if ((updatedData[catKey][floor][room].taskIndex || 0) >= i) {
                                 updatedData[catKey][floor][room].taskIndex = i;
                                 updatedData[catKey][floor][room].progress = 0;
                             }
@@ -2565,8 +2598,8 @@
                             const taskKey = catDef.tasks[subTaskIndex].key;
                             totalProgress += unitData[`progress_${taskKey}`] || 0;
                         } else {
-                            if (unitData.taskIndex > subTaskIndex) totalProgress += 100;
-                            else if (unitData.taskIndex === subTaskIndex) totalProgress += unitData.progress;
+                            if ((unitData.taskIndex || 0) > subTaskIndex) totalProgress += 100;
+                            else if ((unitData.taskIndex || 0) === subTaskIndex) totalProgress += (unitData.progress || 0);
                         }
                     }
                 });
@@ -2589,8 +2622,8 @@
                             isCompleted = progress >= 100;
                             isInProgress = progress > 0 && progress < 100;
                         } else {
-                            isCompleted = (unitData.taskIndex > subTaskIndex) || (unitData.taskIndex === subTaskIndex && unitData.progress >= 100);
-                            isInProgress = (unitData.taskIndex === subTaskIndex && unitData.progress > 0 && unitData.progress < 100);
+                            isCompleted = ((unitData.taskIndex || 0) > subTaskIndex) || ((unitData.taskIndex || 0) === subTaskIndex && (unitData.progress || 0) >= 100);
+                            isInProgress = ((unitData.taskIndex || 0) === subTaskIndex && (unitData.progress || 0) > 0 && (unitData.progress || 0) < 100);
                         }
                         if(isCompleted) completedRooms++;
                         else if (isInProgress) inProgressRooms++;
