@@ -713,6 +713,8 @@
     </div>
 
     <script type="module">
+        import { GoogleGenAI } from "https://esm.run/@google/genai";
+
         document.addEventListener('DOMContentLoaded', () => {
             // --- SUPABASE SETUP START ---
             const SUPABASE_URL = 'https://jyliwiugabumwfxthyeq.supabase.co';
@@ -747,8 +749,8 @@
                 get TOTAL_UNITS() { return ((this.FLOORS.length - 1) * this.ROOMS_PER_FLOOR) + this.ROOMS_ON_FLOOR_2; },
                 DB_TABLE_NAME: 'project_data',
                 DB_ROW_ID: 1,
-                GEMINI_API_MODEL: 'gemini-2.5-flash-preview-05-20',
-                GEMINI_API_KEY: "AIzaSyAZK5kqmXCMro-kuLJ9raVuIDm-vIpxQLM" 
+                GEMINI_API_MODEL: 'gemini-2.5-flash',
+                GEMINI_API_KEY: process.env.API_KEY
             };
 
             const taskDefinitions = {
@@ -789,6 +791,7 @@
             let realtimeChannel;
             let lastFocusedElement;
             let activeModal = null;
+            let ai;
 
 
             // --- DATA HANDLING (Supabase) ---
@@ -810,7 +813,62 @@
                 }
 
                 if (data) {
-                    projectData = data.data;
+                    let loadedData = data.data;
+                    const templateData = generateInitialDataObject();
+                    let isMigrated = false;
+
+                    // Ensure all top-level task categories exist
+                    Object.keys(templateData).forEach(catKey => {
+                        if (catKey !== 'commonArea' && !loadedData.hasOwnProperty(catKey)) {
+                            console.log(`Data migration: adding missing task category '${catKey}'`);
+                            loadedData[catKey] = templateData[catKey];
+                            isMigrated = true;
+                        }
+                    });
+
+                    // Ensure commonArea and its sub-properties exist
+                    if (!loadedData.hasOwnProperty('commonArea')) {
+                        console.log(`Data migration: adding missing 'commonArea'`);
+                        loadedData.commonArea = templateData.commonArea;
+                        isMigrated = true;
+                    } else {
+                        Object.keys(templateData.commonArea).forEach(locKey => {
+                            if (!loadedData.commonArea.hasOwnProperty(locKey)) {
+                                console.log(`Data migration: adding missing common area location '${locKey}'`);
+                                loadedData.commonArea[locKey] = templateData.commonArea[locKey];
+                                isMigrated = true;
+                            } else {
+                                const templateTasks = templateData.commonArea[locKey].tasks;
+                                const loadedTasks = loadedData.commonArea[locKey].tasks;
+                                Object.keys(templateTasks).forEach(taskIdx => {
+                                    if (!loadedTasks.hasOwnProperty(taskIdx)) {
+                                        console.log(`Data migration: adding missing task index '${taskIdx}' for location '${locKey}'`);
+                                        loadedTasks[taskIdx] = templateTasks[taskIdx];
+                                        isMigrated = true;
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    
+                    projectData = loadedData;
+                    
+                    if (isMigrated) {
+                        console.log("Saving migrated data back to Supabase...");
+                        splashLoadingText.textContent = "กำลังอัพเดทโครงสร้างข้อมูล...";
+                        const { error: updateError } = await supabaseClient
+                            .from(CONFIG.DB_TABLE_NAME)
+                            .update({ data: projectData })
+                            .eq('id', CONFIG.DB_ROW_ID);
+                        
+                        if (updateError) {
+                            console.error("Error saving migrated data:", updateError);
+                            showNotificationModal("Supabase Error", "ไม่สามารถอัพเดทโครงสร้างข้อมูลได้: " + updateError.message);
+                            splashLoadingText.textContent = "เกิดข้อผิดพลาดในการอัพเดทข้อมูล";
+                            return;
+                        }
+                        showToast("อัพเดทโครงสร้างข้อมูลสำเร็จ");
+                    }
                 } else {
                     console.log("No data in Supabase, creating initial document...");
                     splashLoadingText.textContent = "ไม่พบข้อมูล, กำลังสร้างเอกสารเริ่มต้น...";
@@ -2660,67 +2718,43 @@
 
             async function runAIAnalysis(payload, renderer) {
                 const loadingOverlay = document.getElementById('ai-loading-overlay');
-                
                 loadingOverlay.style.display = 'flex';
                 document.getElementById('ai-output-text').value = "AI กำลังประมวลผล...";
                 document.getElementById('ai-output-infographic').innerHTML = '';
-                
-                const apiKey = CONFIG.GEMINI_API_KEY; 
-                if (!apiKey) {
-                    showNotificationModal("ต้องการ API Key", "กรุณาใส่ Google AI API Key ของคุณในโค้ดเพื่อใช้งานฟังก์ชัน AI");
+
+                if (!ai) {
+                    showNotificationModal("AI ไม่พร้อมใช้งาน", "ไม่สามารถเริ่มต้น Google AI SDK ได้ กรุณาตรวจสอบการตั้งค่า API Key");
                     loadingOverlay.style.display = 'none';
                     return;
                 }
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${CONFIG.GEMINI_API_MODEL}:generateContent?key=${apiKey}`;
 
-                let retries = 5;
-                let delay = 1000;
-
-                for (let i = 0; i < retries; i++) {
-                    try {
-                        const response = await fetch(apiUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
-
-                        if (response.ok) {
-                            const result = await response.json();
-                            const candidate = result.candidates?.[0];
-
-                            if (candidate && candidate.content?.parts?.[0]?.text) {
-                                renderer(candidate.content.parts[0].text);
-                            } else {
-                                throw new Error("AI ไม่ได้ส่งคำตอบที่ถูกต้องกลับมา");
-                            }
-                            loadingOverlay.style.display = 'none';
-                            return; // Success
+                try {
+                    const result = await ai.models.generateContent({
+                        model: CONFIG.GEMINI_API_MODEL,
+                        contents: payload.contents,
+                        config: {
+                            systemInstruction: payload.systemInstruction?.parts?.[0]?.text,
+                            ...payload.generationConfig
                         }
+                    });
 
-                        if (response.status >= 400 && response.status < 500) {
-                             const errorBody = await response.json();
-                             throw new Error(`API Error: ${response.status} - ${errorBody.error.message}`);
-                        }
-                        
-                        console.warn(`API call failed with status ${response.status}. Retrying in ${delay / 1000}s...`);
-
-                    } catch (error) {
-                        if (i === retries - 1) { 
-                             console.error("AI Analysis Error after multiple retries:", error);
-                             const errorMessage = `เกิดข้อผิดพลาดในการเชื่อมต่อกับ AI: ${error.message}`;
-                             showNotificationModal('AI Error', errorMessage);
-                             document.getElementById('ai-output-text').value = errorMessage;
-                             switchToTextView();
-                             loadingOverlay.style.display = 'none';
-                             return;
-                        }
-                         console.warn(`An error occurred. Retrying in ${delay / 1000}s...`, error.message);
+                    const text = result.text;
+                    if (text) {
+                        renderer(text);
+                    } else {
+                        throw new Error("AI ไม่ได้ส่งคำตอบที่ถูกต้องกลับมา");
                     }
-                    
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    delay *= 2; 
+                } catch (error) {
+                    console.error("AI Analysis Error:", error);
+                    const errorMessage = `เกิดข้อผิดพลาดในการเชื่อมต่อกับ AI: ${error.message}`;
+                    showNotificationModal('AI Error', errorMessage);
+                    document.getElementById('ai-output-text').value = errorMessage;
+                    switchToTextView();
+                } finally {
+                    loadingOverlay.style.display = 'none';
                 }
             }
+
 
             function switchToTextView() {
                 document.getElementById('ai-output-text').classList.remove('hidden');
@@ -3426,6 +3460,18 @@
             function init() {
                 setupCategoryDropdown();
                 bindEventListeners();
+                try {
+                    if (CONFIG.GEMINI_API_KEY) {
+                       ai = new GoogleGenAI({ apiKey: CONFIG.GEMINI_API_KEY });
+                    } else {
+                       console.warn("Gemini API Key is not set. AI features will be disabled.");
+                       // Disable AI buttons if you want
+                       document.getElementById('toggle-ai-report')?.parentElement.remove();
+                    }
+                } catch(e) {
+                    console.error("Failed to initialize GoogleGenAI:", e.message);
+                    showNotificationModal("AI Error", "ไม่สามารถเริ่มต้น Gemini AI ได้: " + e.message);
+                }
                 if (initializeSupabase()) {
                     setupRealtimeListenerAndInitApp();
                 }
