@@ -3288,6 +3288,13 @@
 
                 document.getElementById('closeModalBtn').addEventListener('click', () => closeModal('updateModal'));
                 document.getElementById('saveProgressBtn').addEventListener('click', saveProgress);
+
+                document.getElementById('updateModal').addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        document.getElementById('saveProgressBtn').click();
+                    }
+                });
                 
                 document.getElementById('clearDataBtn').addEventListener('click', (e) => {
                     const CONFIRM_COUNT = 5;
