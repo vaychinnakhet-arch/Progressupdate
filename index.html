@@ -13,6 +13,15 @@
     <!-- SUPABASE SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
+    <!-- GEMINI SDK -->
+    <script type="importmap">
+    {
+      "imports": {
+        "@google/genai": "https://esm.run/@google/genai"
+      }
+    }
+    </script>
+    
     <style>
         body {
             font-family: 'Sarabun', sans-serif;
@@ -662,28 +671,6 @@
                 </div>
             </div>
         </div>
-
-
-        <!-- Confirmation Modal -->
-        <div id="confirmModal" class="modal fixed inset-0 w-full h-full items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
-            <div class="bg-white rounded-lg shadow-xl p-6 w-11/12 md:w-1/4">
-                <h2 id="confirm-title" class="text-xl font-bold mb-4">ยืนยันการกระทำ</h2>
-                <p id="confirm-message" class="mb-6">คุณแน่ใจหรือไม่ว่าต้องการล้างข้อมูลทั้งหมด? การกระทำนี้ไม่สามารถย้อนกลับได้</p>
-                <div class="flex justify-end gap-4">
-                    <button id="confirmCancelBtn" class="px-4 py-2 bg-slate-300 text-slate-800 rounded-md hover:bg-slate-400">ยกเลิก</button>
-                    <button id="confirmOkBtn" class="px-4 py-2 bg-rose-600 text-white rounded-md hover:bg-rose-700">ยืนยัน</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Notification Modal -->
-        <div id="notificationModal" class="modal fixed inset-0 w-full h-full items-center justify-center z-[60]" role="dialog" aria-modal="true" aria-labelledby="notification-title">
-            <div class="bg-white rounded-lg shadow-xl p-6 w-11/12 md:w-1/4 text-center">
-                <h2 id="notification-title" class="text-xl font-bold mb-4"></h2>
-                <p id="notification-message" class="mb-6"></p>
-                <button id="notificationOkBtn" class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">ตกลง</button>
-            </div>
-        </div>
     </div> <!-- END of main-app-container -->
     
     <!-- Quick Update Mode Container -->
@@ -706,6 +693,25 @@
         </main>
     </div>
 
+    <!-- Modals (Moved outside main containers) -->
+    <div id="confirmModal" class="modal fixed inset-0 w-full h-full items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-11/12 md:w-1/4">
+            <h2 id="confirm-title" class="text-xl font-bold mb-4">ยืนยันการกระทำ</h2>
+            <p id="confirm-message" class="mb-6">คุณแน่ใจหรือไม่ว่าต้องการล้างข้อมูลทั้งหมด? การกระทำนี้ไม่สามารถย้อนกลับได้</p>
+            <div class="flex justify-end gap-4">
+                <button id="confirmCancelBtn" class="px-4 py-2 bg-slate-300 text-slate-800 rounded-md hover:bg-slate-400">ยกเลิก</button>
+                <button id="confirmOkBtn" class="px-4 py-2 bg-rose-600 text-white rounded-md hover:bg-rose-700">ยืนยัน</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notificationModal" class="modal fixed inset-0 w-full h-full items-center justify-center z-[60]" role="dialog" aria-modal="true" aria-labelledby="notification-title">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-11/12 md:w-1/4 text-center">
+            <h2 id="notification-title" class="text-xl font-bold mb-4"></h2>
+            <p id="notification-message" class="mb-6"></p>
+            <button id="notificationOkBtn" class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">ตกลง</button>
+        </div>
+    </div>
 
     <!-- Toast Notification -->
     <div id="toast" class="fixed top-5 right-5 bg-slate-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-[120%] transition-transform duration-300 ease-in-out z-[100]">
@@ -713,7 +719,7 @@
     </div>
 
     <script type="module">
-        import { GoogleGenAI } from "https://esm.run/@google/genai";
+        import { GoogleGenAI, Type } from "@google/genai";
 
         document.addEventListener('DOMContentLoaded', () => {
             // --- SUPABASE SETUP START ---
@@ -750,7 +756,6 @@
                 DB_TABLE_NAME: 'project_data',
                 DB_ROW_ID: 1,
                 GEMINI_API_MODEL: 'gemini-2.5-flash',
-                GEMINI_API_KEY: process.env.API_KEY
             };
 
             const taskDefinitions = {
@@ -813,62 +818,7 @@
                 }
 
                 if (data) {
-                    let loadedData = data.data;
-                    const templateData = generateInitialDataObject();
-                    let isMigrated = false;
-
-                    // Ensure all top-level task categories exist
-                    Object.keys(templateData).forEach(catKey => {
-                        if (catKey !== 'commonArea' && !loadedData.hasOwnProperty(catKey)) {
-                            console.log(`Data migration: adding missing task category '${catKey}'`);
-                            loadedData[catKey] = templateData[catKey];
-                            isMigrated = true;
-                        }
-                    });
-
-                    // Ensure commonArea and its sub-properties exist
-                    if (!loadedData.hasOwnProperty('commonArea')) {
-                        console.log(`Data migration: adding missing 'commonArea'`);
-                        loadedData.commonArea = templateData.commonArea;
-                        isMigrated = true;
-                    } else {
-                        Object.keys(templateData.commonArea).forEach(locKey => {
-                            if (!loadedData.commonArea.hasOwnProperty(locKey)) {
-                                console.log(`Data migration: adding missing common area location '${locKey}'`);
-                                loadedData.commonArea[locKey] = templateData.commonArea[locKey];
-                                isMigrated = true;
-                            } else {
-                                const templateTasks = templateData.commonArea[locKey].tasks;
-                                const loadedTasks = loadedData.commonArea[locKey].tasks;
-                                Object.keys(templateTasks).forEach(taskIdx => {
-                                    if (!loadedTasks.hasOwnProperty(taskIdx)) {
-                                        console.log(`Data migration: adding missing task index '${taskIdx}' for location '${locKey}'`);
-                                        loadedTasks[taskIdx] = templateTasks[taskIdx];
-                                        isMigrated = true;
-                                    }
-                                });
-                            }
-                        });
-                    }
-                    
-                    projectData = loadedData;
-                    
-                    if (isMigrated) {
-                        console.log("Saving migrated data back to Supabase...");
-                        splashLoadingText.textContent = "กำลังอัพเดทโครงสร้างข้อมูล...";
-                        const { error: updateError } = await supabaseClient
-                            .from(CONFIG.DB_TABLE_NAME)
-                            .update({ data: projectData })
-                            .eq('id', CONFIG.DB_ROW_ID);
-                        
-                        if (updateError) {
-                            console.error("Error saving migrated data:", updateError);
-                            showNotificationModal("Supabase Error", "ไม่สามารถอัพเดทโครงสร้างข้อมูลได้: " + updateError.message);
-                            splashLoadingText.textContent = "เกิดข้อผิดพลาดในการอัพเดทข้อมูล";
-                            return;
-                        }
-                        showToast("อัพเดทโครงสร้างข้อมูลสำเร็จ");
-                    }
+                    projectData = data.data;
                 } else {
                     console.log("No data in Supabase, creating initial document...");
                     splashLoadingText.textContent = "ไม่พบข้อมูล, กำลังสร้างเอกสารเริ่มต้น...";
@@ -2716,45 +2666,45 @@
                 return { submitted, passed_clean, passed_defect, failed_clean, failed_defect, totalRooms, inInspection };
             }
 
-            async function runAIAnalysis(payload, renderer) {
+            async function runAIAnalysis(request, renderer) {
                 const loadingOverlay = document.getElementById('ai-loading-overlay');
+                
                 loadingOverlay.style.display = 'flex';
                 document.getElementById('ai-output-text').value = "AI กำลังประมวลผล...";
                 document.getElementById('ai-output-infographic').innerHTML = '';
-
+                
                 if (!ai) {
-                    showNotificationModal("AI ไม่พร้อมใช้งาน", "ไม่สามารถเริ่มต้น Google AI SDK ได้ กรุณาตรวจสอบการตั้งค่า API Key");
+                    showNotificationModal("AI ไม่พร้อมใช้งาน", "ไม่สามารถเริ่มต้นระบบ AI ได้ กรุณาตรวจสอบการตั้งค่า API Key");
                     loadingOverlay.style.display = 'none';
                     return;
                 }
 
-                try {
-                    const result = await ai.models.generateContent({
-                        model: CONFIG.GEMINI_API_MODEL,
-                        contents: payload.contents,
-                        config: {
-                            systemInstruction: payload.systemInstruction?.parts?.[0]?.text,
-                            ...payload.generationConfig
-                        }
-                    });
+                let retries = 5;
+                let delay = 1000;
 
-                    const text = result.text;
-                    if (text) {
-                        renderer(text);
-                    } else {
-                        throw new Error("AI ไม่ได้ส่งคำตอบที่ถูกต้องกลับมา");
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        const response = await ai.models.generateContent(request);
+                        renderer(response.text);
+                        loadingOverlay.style.display = 'none';
+                        return; // Success
+                    } catch (error) {
+                        if (i === retries - 1) { 
+                             console.error("AI Analysis Error after multiple retries:", error);
+                             const errorMessage = `เกิดข้อผิดพลาดในการเชื่อมต่อกับ AI: ${error.message}`;
+                             showNotificationModal('AI Error', errorMessage);
+                             document.getElementById('ai-output-text').value = errorMessage;
+                             switchToTextView();
+                             loadingOverlay.style.display = 'none';
+                             return;
+                        }
+                         console.warn(`An error occurred. Retrying in ${delay / 1000}s...`, error.message);
                     }
-                } catch (error) {
-                    console.error("AI Analysis Error:", error);
-                    const errorMessage = `เกิดข้อผิดพลาดในการเชื่อมต่อกับ AI: ${error.message}`;
-                    showNotificationModal('AI Error', errorMessage);
-                    document.getElementById('ai-output-text').value = errorMessage;
-                    switchToTextView();
-                } finally {
-                    loadingOverlay.style.display = 'none';
+                    
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2; 
                 }
             }
-
 
             function switchToTextView() {
                 document.getElementById('ai-output-text').classList.remove('hidden');
@@ -2784,11 +2734,14 @@
                 if (!rawReportText) return;
 
                 switchToTextView();
-                const payload = {
+                const request = {
+                    model: CONFIG.GEMINI_API_MODEL,
                     contents: [{ parts: [{ text: rawReportText }] }],
-                    systemInstruction: { parts: [{ text: "คุณคือผู้จัดการโครงการที่ต้องรายงานความคืบหน้าในกลุ่ม LINE จงสรุปข้อมูลต่อไปนี้ให้กระชับ ชัดเจน ห้ามใช้ Markdown formatting เช่น `**` หรือ `*` และห้ามลงท้ายด้วย 'ครับ' หรือ 'ค่ะ' แต่ให้ใช้ emoji ช่วยเน้นประเด็นสำคัญ และจัดรูปแบบให้อ่านง่ายในแอปพลิเคชันแชท" }] }
+                    config: {
+                        systemInstruction: "คุณคือผู้จัดการโครงการที่ต้องรายงานความคืบหน้าในกลุ่ม LINE จงสรุปข้อมูลต่อไปนี้ให้กระชับ ชัดเจน ห้ามใช้ Markdown formatting เช่น `**` หรือ `*` และห้ามลงท้ายด้วย 'ครับ' หรือ 'ค่ะ' แต่ให้ใช้ emoji ช่วยเน้นประเด็นสำคัญ และจัดรูปแบบให้อ่านง่ายในแอปพลิเคชันแชท"
+                    }
                 };
-                runAIAnalysis(payload, (text) => {
+                runAIAnalysis(request, (text) => {
                     document.getElementById('ai-output-text').value = text;
                 });
             }
@@ -2801,35 +2754,36 @@
                 const today = new Date();
                 const dateString = `${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear() + 543}`;
                 
-                const payload = {
+                const request = {
+                    model: CONFIG.GEMINI_API_MODEL,
                     contents: [{ parts: [{ text: `จากข้อมูลรายงานความคืบหน้าโครงการ Vay Chinnakhet:\n---\n${rawReportText}\n---` }] }],
-                    systemInstruction: { parts: [{ text: "คุณคือผู้ช่วยวิเคราะห์โครงการก่อสร้างมืออาชีพ หน้าที่ของคุณคือแปลงข้อมูลความคืบหน้าดิบให้เป็นข้อมูลสรุปสำหรับ Infographic ตาม schema ที่กำหนดอย่างเคร่งครัด โดยวิเคราะห์หาประเด็นสำคัญในแต่ละหัวข้อ: งานที่คืบหน้าดี, จุดที่ต้องให้ความสำคัญ, และแผนงาน/ข้อเสนอแนะที่นำไปปฏิบัติได้จริง" }] },
-                    generationConfig: {
+                    config: {
+                        systemInstruction: "คุณคือผู้ช่วยวิเคราะห์โครงการก่อสร้างมืออาชีพ หน้าที่ของคุณคือแปลงข้อมูลความคืบหน้าดิบให้เป็นข้อมูลสรุปสำหรับ Infographic ตาม schema ที่กำหนดอย่างเคร่งครัด โดยวิเคราะห์หาประเด็นสำคัญในแต่ละหัวข้อ: งานที่คืบหน้าดี, จุดที่ต้องให้ความสำคัญ, และแผนงาน/ข้อเสนอแนะที่นำไปปฏิบัติได้จริง",
                         responseMimeType: "application/json",
                         responseSchema: {
-                            type: "OBJECT",
+                            type: Type.OBJECT,
                             properties: {
                                 infographicData: {
-                                    type: "OBJECT",
+                                    type: Type.OBJECT,
                                     properties: {
-                                        reportTitle: { type: "STRING", description: "ชื่อรายงานสรุปที่เหมาะสมกับงานที่เลือก เช่น 'สรุปความคืบหน้างานสกิมและทาสี'" },
-                                        reportDate: { type: "STRING", description: `วันที่ของรายงาน, คือ '${dateString}'` },
-                                        executiveSummary: { type: "STRING", description: "สรุปภาพรวมทั้งหมด 1-2 ประโยคที่กระชับที่สุด" },
-                                        overallProgress: { type: "NUMBER", description: "คำนวณค่าเฉลี่ยความคืบหน้าของ 'ทุกงานที่เลือก' รวมกันเป็นตัวเลข 0-100" },
+                                        reportTitle: { type: Type.STRING, description: "ชื่อรายงานสรุปที่เหมาะสมกับงานที่เลือก เช่น 'สรุปความคืบหน้างานสกิมและทาสี'" },
+                                        reportDate: { type: Type.STRING, description: `วันที่ของรายงาน, คือ '${dateString}'` },
+                                        executiveSummary: { type: Type.STRING, description: "สรุปภาพรวมทั้งหมด 1-2 ประโยคที่กระชับที่สุด" },
+                                        overallProgress: { type: Type.NUMBER, description: "คำนวณค่าเฉลี่ยความคืบหน้าของ 'ทุกงานที่เลือก' รวมกันเป็นตัวเลข 0-100" },
                                         keyMetrics: { 
-                                            type: "ARRAY", 
+                                            type: Type.ARRAY, 
                                             description: "สร้าง Key Metrics ที่สำคัญ 4 อย่างจากข้อมูลที่ให้มา",
                                             items: { 
-                                                type: "OBJECT", 
+                                                type: Type.OBJECT, 
                                                 properties: { 
-                                                    label: { type: "STRING" }, 
-                                                    value: { type: "STRING" }
+                                                    label: { type: Type.STRING }, 
+                                                    value: { type: Type.STRING }
                                                 } 
                                             } 
                                         },
-                                        progressingWell: { type: "ARRAY", items: { type: "STRING" }, description: "ลิสต์ของงานหรือพื้นที่ที่คืบหน้าได้ดี" },
-                                        areasOfConcern: { type: "ARRAY", items: { type: "STRING" }, description: "ลิสต์ของปัญหาหรือความเสี่ยงที่สำคัญที่ต้องให้ความสนใจ" },
-                                        recommendations: { type: "ARRAY", items: { type: "STRING" }, description: "ลิสต์ของแผนงานหรือข้อเสนอแนะที่ควรทำต่อไป" }
+                                        progressingWell: { type: Type.ARRAY, items: { type: Type.STRING }, description: "ลิสต์ของงานหรือพื้นที่ที่คืบหน้าได้ดี" },
+                                        areasOfConcern: { type: Type.ARRAY, items: { type: Type.STRING }, description: "ลิสต์ของปัญหาหรือความเสี่ยงที่สำคัญที่ต้องให้ความสนใจ" },
+                                        recommendations: { type: Type.ARRAY, items: { type: Type.STRING }, description: "ลิสต์ของแผนงานหรือข้อเสนอแนะที่ควรทำต่อไป" }
                                     }
                                 }
                             }
@@ -2837,7 +2791,7 @@
                     }
                 };
 
-                runAIAnalysis(payload, (jsonText) => {
+                runAIAnalysis(request, (jsonText) => {
                     try {
                         const aiData = JSON.parse(jsonText);
                         renderResidentialInfographic(aiData.infographicData);
@@ -3022,12 +2976,13 @@
                 const today = new Date();
                 const dateString = `${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear() + 543}`;
 
-                const payload = {
+                const request = {
+                    model: CONFIG.GEMINI_API_MODEL,
                     contents: [{ parts: [{ text: `วิเคราะห์และสรุปข้อมูลความคืบหน้าของงานพื้นที่ส่วนกลางโครงการ Vay Chinnakhet:\n---\n${rawText}\n---` }] }],
-                    systemInstruction: { parts: [{ text: "คุณคือผู้จัดการโครงการก่อสร้างมืออาชีพ (Project Manager) ที่มีทักษะการวิเคราะห์และสื่อสารเป็นเลิศ หน้าที่ของคุณคือแปลงข้อมูลดิบเกี่ยวกับความคืบหน้าของงานพื้นที่ส่วนกลาง ซึ่งมีโครงสร้างเป็น 'พื้นที่ -> งาน -> ชั้น' ให้เป็น Infographic สรุปรายชั้นที่สวยงามและเข้าใจง่าย โดยต้องตอบกลับเป็น JSON object ที่ถูกต้องตาม schema ที่กำหนดเท่านั้น" }] },
-                    generationConfig: {
+                    config: {
+                        systemInstruction: "คุณคือผู้จัดการโครงการก่อสร้างมืออาชีพ (Project Manager) ที่มีทักษะการวิเคราะห์และสื่อสารเป็นเลิศ หน้าที่ของคุณคือแปลงข้อมูลดิบเกี่ยวกับความคืบหน้าของงานพื้นที่ส่วนกลาง ซึ่งมีโครงสร้างเป็น 'พื้นที่ -> งาน -> ชั้น' ให้เป็น Infographic สรุปรายชั้นที่สวยงามและเข้าใจง่าย โดยต้องตอบกลับเป็น JSON object ที่ถูกต้องตาม schema ที่กำหนดเท่านั้น",
                         responseMimeType: "application/json",
-                        responseSchema: { type: "OBJECT", properties: { infographicData: { type: "OBJECT", properties: { reportDate: { type: "STRING", description: `วันที่ของรายงาน, คือ '${dateString}'` }, executiveSummary: { type: "STRING", description: "สรุปภาพรวมทั้งหมดของพื้นที่ส่วนกลาง 1-2 ประโยคที่กระชับที่สุด" }, overallProgress: { type: "NUMBER", description: "คำนวณค่าเฉลี่ยความคืบหน้าของ 'ทุกงาน' ใน 'ทุกพื้นที่' และ 'ทุกชั้น' รวมกันเป็นตัวเลข 0-100" }, floorDetails: { type: "ARRAY", description: "อาร์เรย์ของข้อมูลสรุปสำหรับแต่ละชั้น ตั้งแต่ชั้น 2 ถึง 8", items: { type: "OBJECT", properties: { floor: { type: "NUMBER", description: "หมายเลขชั้น (2, 3, ..., 8)"}, floorProgress: { type: "NUMBER", description: "คำนวณค่าเฉลี่ยความคืบหน้าของ 'ทุกงาน' ใน 'ทุกพื้นที่' เฉพาะของชั้นนี้ เป็นตัวเลข 0-100"}, completedTasks: { type: "ARRAY", items: {type: "STRING"}, description: "ลิสต์ของงานที่เสร็จสมบูรณ์ 100% ในชั้นนี้ รูปแบบ 'ชื่องาน - ชื่อพื้นที่' (เช่น 'ราวบันได - บันได ST1')"}, inProgressTasks: { type: "ARRAY", items: {type: "STRING"}, description: "ลิสต์ของงานที่กำลังดำเนินการ (1-99%) ในชั้นนี้ รูปแบบ 'ชื่องาน - ชื่อพื้นที่'"}, notes: { type: "STRING", description: "สรุปสั้นๆ ที่น่าสนใจเกี่ยวกับความคืบหน้าของชั้นนี้ (เช่น 'งานส่วนใหญ่ในชั้นนี้เสร็จสิ้นแล้ว เหลือเพียงเก็บรายละเอียดเล็กน้อย')"} } } } } } } }
+                        responseSchema: { type: Type.OBJECT, properties: { infographicData: { type: Type.OBJECT, properties: { reportDate: { type: Type.STRING, description: `วันที่ของรายงาน, คือ '${dateString}'` }, executiveSummary: { type: Type.STRING, description: "สรุปภาพรวมทั้งหมดของพื้นที่ส่วนกลาง 1-2 ประโยคที่กระชับที่สุด" }, overallProgress: { type: Type.NUMBER, description: "คำนวณค่าเฉลี่ยความคืบหน้าของ 'ทุกงาน' ใน 'ทุกพื้นที่' และ 'ทุกชั้น' รวมกันเป็นตัวเลข 0-100" }, floorDetails: { type: Type.ARRAY, description: "อาร์เรย์ของข้อมูลสรุปสำหรับแต่ละชั้น ตั้งแต่ชั้น 2 ถึง 8", items: { type: Type.OBJECT, properties: { floor: { type: Type.NUMBER, description: "หมายเลขชั้น (2, 3, ..., 8)"}, floorProgress: { type: Type.NUMBER, description: "คำนวณค่าเฉลี่ยความคืบหน้าของ 'ทุกงาน' ใน 'ทุกพื้นที่' เฉพาะของชั้นนี้ เป็นตัวเลข 0-100"}, completedTasks: { type: Type.ARRAY, items: {type: Type.STRING}, description: "ลิสต์ของงานที่เสร็จสมบูรณ์ 100% ในชั้นนี้ รูปแบบ 'ชื่องาน - ชื่อพื้นที่' (เช่น 'ราวบันได - บันได ST1')"}, inProgressTasks: { type: Type.ARRAY, items: {type: Type.STRING}, description: "ลิสต์ของงานที่กำลังดำเนินการ (1-99%) ในชั้นนี้ รูปแบบ 'ชื่องาน - ชื่อพื้นที่'"}, notes: { type: Type.STRING, description: "สรุปสั้นๆ ที่น่าสนใจเกี่ยวกับความคืบหน้าของชั้นนี้ (เช่น 'งานส่วนใหญ่ในชั้นนี้เสร็จสิ้นแล้ว เหลือเพียงเก็บรายละเอียดเล็กน้อย')"} } } } } } } }
                     }
                 };
                 
@@ -3052,7 +3007,7 @@
 
                 document.getElementById('downloadInfographicBtn').addEventListener('click', () => downloadInfographic('infographic-output', 'downloadInfographicBtn'));
                 openModal('reportModal', triggerElement);
-                runAIAnalysis(payload, (jsonText) => {
+                runAIAnalysis(request, (jsonText) => {
                     try {
                         const aiData = JSON.parse(jsonText);
                         renderCommonAreaInfographic(aiData.infographicData);
@@ -3288,13 +3243,6 @@
 
                 document.getElementById('closeModalBtn').addEventListener('click', () => closeModal('updateModal'));
                 document.getElementById('saveProgressBtn').addEventListener('click', saveProgress);
-
-                document.getElementById('updateModal').addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        document.getElementById('saveProgressBtn').click();
-                    }
-                });
                 
                 document.getElementById('clearDataBtn').addEventListener('click', (e) => {
                     const CONFIRM_COUNT = 5;
@@ -3464,21 +3412,23 @@
             }
 
             // --- INITIALIZATION ---
+            function initializeAI() {
+                try {
+                    // Per instructions, API key must be from process.env.API_KEY.
+                    // This will fail in a standard browser environment if the key isn't injected,
+                    // but we must adhere to the prompt's requirements.
+                    ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+                    console.log("Google AI client initialized.");
+                } catch (error) {
+                    console.warn("Could not initialize Google AI SDK. AI features will be disabled.", error.message);
+                    // Don't block the main app from loading. The AI functions will handle the 'ai' instance being null.
+                }
+            }
+
             function init() {
                 setupCategoryDropdown();
                 bindEventListeners();
-                try {
-                    if (CONFIG.GEMINI_API_KEY) {
-                       ai = new GoogleGenAI({ apiKey: CONFIG.GEMINI_API_KEY });
-                    } else {
-                       console.warn("Gemini API Key is not set. AI features will be disabled.");
-                       // Disable AI buttons if you want
-                       document.getElementById('toggle-ai-report')?.parentElement.remove();
-                    }
-                } catch(e) {
-                    console.error("Failed to initialize GoogleGenAI:", e.message);
-                    showNotificationModal("AI Error", "ไม่สามารถเริ่มต้น Gemini AI ได้: " + e.message);
-                }
+                initializeAI(); // Initialize AI, but don't block app load if it fails.
                 if (initializeSupabase()) {
                     setupRealtimeListenerAndInitApp();
                 }
