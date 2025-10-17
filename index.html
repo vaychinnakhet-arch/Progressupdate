@@ -3414,10 +3414,7 @@
             // --- INITIALIZATION ---
             function initializeAI() {
                 try {
-                    // Per instructions, API key must be from process.env.API_KEY.
-                    // This will fail in a standard browser environment if the key isn't injected,
-                    // but we must adhere to the prompt's requirements.
-                    ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+                    ai = new GoogleGenAI({ apiKey: 'AIzaSyCqwffIizNawR4mfHmYx_vVXp_-lRFw6PU' });
                     console.log("Google AI client initialized.");
                 } catch (error) {
                     console.warn("Could not initialize Google AI SDK. AI features will be disabled.", error.message);
