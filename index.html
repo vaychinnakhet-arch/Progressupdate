@@ -551,8 +551,8 @@
                 <span class="font-bold text-slate-600">มุมมอง:</span>
                 <div id="view-toggle" class="bg-slate-200 p-1 rounded-full text-slate-800 text-xs md:text-sm font-semibold flex">
                     <button id="view-residential-btn" class="view-toggle-btn px-3 py-1 rounded-full active">ห้องพัก</button>
-                    <button id="view-common-btn" class="view-toggle-btn px-3 py-1 rounded-full">ส่วนกลาง</button>
                     <button id="view-qc-summary-btn" class="view-toggle-btn px-3 py-1 rounded-full">สรุป QC</button>
+                    <button id="view-common-btn" class="view-toggle-btn px-3 py-1 rounded-full">ส่วนกลาง</button>
                 </div>
             </div>
 
@@ -1038,8 +1038,8 @@
                 
                 resBtn.classList.toggle('active', view === 'residential');
                 comBtn.classList.toggle('active', view === 'common');
-                qcBtn.classList.remove('active');
-
+                qcBtn.classList.toggle('active', view === 'qcSummary');
+                
                 renderTable();
             }
 
@@ -1085,7 +1085,7 @@
                 } else if (currentView === 'common') {
                     captureArea.classList.add('common-view-active');
                     renderCommonAreaTable();
-                } else if (currentView === 'qc_summary') {
+                } else if (currentView === 'qcSummary') {
                     captureArea.classList.remove('common-view-active');
                     renderQCSummaryTable();
                 }
@@ -1127,6 +1127,175 @@
                     });
                 });
                 mainTable.appendChild(tbody);
+            }
+
+            function renderQCSummaryTable() {
+                const mainTable = document.getElementById('main-table');
+                mainTable.innerHTML = '';
+
+                const thead = document.createElement('thead');
+                let headerHTML = `
+                    <tr class="bg-slate-200">
+                        <th class="border p-2" rowspan="2"><span>ชั้น</span></th>
+                        <th class="border p-2" rowspan="2"><span>รายการ</span></th>
+                        <th class="border p-2" colspan="${CONFIG.ROOMS_PER_FLOOR}"><span>ROOM No.</span></th>
+                        <th class="border-y border-l bg-white separator-cell" rowspan="2"></th>
+                        <th class="border p-2 bg-slate-200" colspan="3"><span>สรุปผลตรวจ</span></th>
+                    </tr>
+                    <tr class="bg-slate-50">`;
+                for (let i = 1; i <= CONFIG.ROOMS_PER_FLOOR; i++) {
+                    headerHTML += `<th class="border p-1 md:p-2 font-normal"><span>${i}</span></th>`;
+                }
+                headerHTML += `
+                        <th class="border p-2 bg-slate-100 font-semibold"><span>ส่งแล้ว</span></th>
+                        <th class="border p-2 bg-teal-100 font-semibold"><span>ผ่าน</span></th>
+                        <th class="border p-2 bg-rose-100 font-semibold"><span>ไม่ผ่าน</span></th>
+                    </tr>`;
+                thead.innerHTML = headerHTML;
+                mainTable.appendChild(thead);
+
+                const tbody = document.createElement('tbody');
+                const totals = {
+                    wetWork: { submitted: 0, passed: 0, failed: 0 },
+                    endProduct: { submitted: 0, passed: 0, failed: 0 }
+                };
+
+                const renderCellContent = (unitData) => {
+                    let styleClasses = 'bg-white text-black';
+                    let cellText = '0';
+                    if (unitData.inInspection) {
+                        styleClasses = 'bg-yellow-400 text-black';
+                        cellText = 'ตรวจสอบ';
+                    } else {
+                        let scoreToShow = 0, defectToShow = false, stageLabel = '';
+                        if (unitData.qcScore > 0 && unitData.qcScore === unitData.cmScore) {
+                            scoreToShow = unitData.qcScore;
+                            defectToShow = unitData.qcHasMajorDefect;
+                            stageLabel = 'QC-CM: ';
+                        } else if (unitData.qcScore > 0) {
+                            scoreToShow = unitData.qcScore;
+                            defectToShow = unitData.qcHasMajorDefect;
+                            stageLabel = 'QC: ';
+                        } else if (unitData.cmScore > 0) {
+                            scoreToShow = unitData.cmScore;
+                            defectToShow = unitData.cmHasMajorDefect;
+                            stageLabel = 'CM: ';
+                        }
+                        if (scoreToShow > 0) styleClasses = scoreToShow >= 85 ? 'bg-teal-500 text-white' : 'bg-rose-500 text-white';
+                        cellText = scoreToShow > 0 ? `${stageLabel}${Number.isInteger(scoreToShow) ? scoreToShow : scoreToShow.toFixed(2)}` : '0';
+                        if (defectToShow) cellText += '!';
+                    }
+                    return { styleClasses, cellText };
+                };
+
+                CONFIG.FLOORS.forEach(floor => {
+                    const roomsOnThisFloor = (floor === 2) ? CONFIG.ROOMS_ON_FLOOR_2 : CONFIG.ROOMS_PER_FLOOR;
+                    
+                    const wetWorkRow = document.createElement('tr');
+                    const endProductRow = document.createElement('tr');
+                    
+                    wetWorkRow.innerHTML = `
+                        <td class="border p-2 font-bold bg-slate-100 align-middle" rowspan="2"><span>${floor}</span></td>
+                        <td class="border p-1 font-semibold bg-slate-50 text-slate-600 text-[11px] align-middle">Wet Work</td>
+                    `;
+                    endProductRow.innerHTML = `
+                        <td class="border p-1 font-semibold bg-slate-50 text-slate-600 text-[11px] align-middle">End Product</td>
+                    `;
+
+                    let floorTotals = {
+                        wetWork: { submitted: 0, passed: 0, failed: 0 },
+                        endProduct: { submitted: 0, passed: 0, failed: 0 }
+                    };
+
+                    for (let room = 1; room <= CONFIG.ROOMS_PER_FLOOR; room++) {
+                        if (floor === 2 && room > CONFIG.ROOMS_ON_FLOOR_2) {
+                            wetWorkRow.innerHTML += `<td class="border p-2 bg-slate-200"></td>`;
+                            endProductRow.innerHTML += `<td class="border p-2 bg-slate-200"></td>`;
+                            continue;
+                        }
+
+                        // Wet Work Cell
+                        const wwData = projectData.wetWork?.[floor]?.[room] || {};
+                        const { styleClasses: wwStyle, cellText: wwText } = renderCellContent(wwData);
+                        const wwCell = document.createElement('td');
+                        wwCell.className = `border p-2 table-cell ${wwStyle}`;
+                        wwCell.innerHTML = `<span class="percentage-text">${wwText}</span>`;
+                        wwCell.dataset.floor = floor;
+                        wwCell.dataset.room = room;
+                        wwCell.dataset.qcType = 'wetWork';
+                        wetWorkRow.appendChild(wwCell);
+
+                        // End Product Cell
+                        const epData = projectData.endProduct?.[floor]?.[room] || {};
+                        const { styleClasses: epStyle, cellText: epText } = renderCellContent(epData);
+                        const epCell = document.createElement('td');
+                        epCell.className = `border p-2 table-cell ${epStyle}`;
+                        epCell.innerHTML = `<span class="percentage-text">${epText}</span>`;
+                        epCell.dataset.floor = floor;
+                        epCell.dataset.room = room;
+                        epCell.dataset.qcType = 'endProduct';
+                        endProductRow.appendChild(epCell);
+
+                        // Calculate floor totals
+                        const wwScore = (wwData.qcScore || 0) > 0 ? wwData.qcScore : (wwData.cmScore || 0);
+                        if (wwScore > 0) {
+                            floorTotals.wetWork.submitted++;
+                            if (wwScore >= 85) floorTotals.wetWork.passed++; else floorTotals.wetWork.failed++;
+                        }
+                        const epScore = (epData.qcScore || 0) > 0 ? epData.qcScore : (epData.cmScore || 0);
+                        if (epScore > 0) {
+                            floorTotals.endProduct.submitted++;
+                            if (epScore >= 85) floorTotals.endProduct.passed++; else floorTotals.endProduct.failed++;
+                        }
+                    }
+
+                    // Append Separator and Summary Cells
+                    wetWorkRow.innerHTML += `<td class="border-y border-l bg-white separator-cell" rowspan="2"></td>`;
+                    wetWorkRow.innerHTML += `
+                        <td class="border p-2 summary-cell"><span>${floorTotals.wetWork.submitted}</span></td>
+                        <td class="border p-2 summary-cell bg-teal-50"><span>${floorTotals.wetWork.passed}</span></td>
+                        <td class="border p-2 summary-cell bg-rose-50"><span>${floorTotals.wetWork.failed}</span></td>
+                    `;
+                    endProductRow.innerHTML += `
+                        <td class="border p-2 summary-cell"><span>${floorTotals.endProduct.submitted}</span></td>
+                        <td class="border p-2 summary-cell bg-teal-50"><span>${floorTotals.endProduct.passed}</span></td>
+                        <td class="border p-2 summary-cell bg-rose-50"><span>${floorTotals.endProduct.failed}</span></td>
+                    `;
+
+                    tbody.appendChild(wetWorkRow);
+                    tbody.appendChild(endProductRow);
+
+                    // Add to grand totals
+                    totals.wetWork.submitted += floorTotals.wetWork.submitted;
+                    totals.wetWork.passed += floorTotals.wetWork.passed;
+                    totals.wetWork.failed += floorTotals.wetWork.failed;
+                    totals.endProduct.submitted += floorTotals.endProduct.submitted;
+                    totals.endProduct.passed += floorTotals.endProduct.passed;
+                    totals.endProduct.failed += floorTotals.endProduct.failed;
+                });
+
+                mainTable.appendChild(tbody);
+                
+                const tfoot = document.createElement('tfoot');
+                tfoot.innerHTML = `
+                    <tr class="font-bold bg-slate-200">
+                        <td class="border p-2 align-middle" rowspan="2"><span>TOTAL</span></td>
+                        <td class="border p-1 font-semibold bg-slate-100 text-slate-600 text-xs align-middle">Wet Work</td>
+                        <td class="border" colspan="${CONFIG.ROOMS_PER_FLOOR}"><span>( ${CONFIG.TOTAL_UNITS} UNIT )</span></td>
+                        <td class="border-y border-l bg-white separator-cell" rowspan="2"></td>
+                        <td class="border p-2 bg-slate-100"><span>${totals.wetWork.submitted}</span></td>
+                        <td class="border p-2 bg-teal-100"><span>${totals.wetWork.passed}</span></td>
+                        <td class="border p-2 bg-rose-100"><span>${totals.wetWork.failed}</span></td>
+                    </tr>
+                    <tr class="font-bold bg-slate-200">
+                        <td class="border p-1 font-semibold bg-slate-100 text-slate-600 text-xs align-middle">End Product</td>
+                        <td class="border" colspan="${CONFIG.ROOMS_PER_FLOOR}"></td>
+                        <td class="border p-2 bg-slate-100"><span>${totals.endProduct.submitted}</span></td>
+                        <td class="border p-2 bg-teal-100"><span>${totals.endProduct.passed}</span></td>
+                        <td class="border p-2 bg-rose-100"><span>${totals.endProduct.failed}</span></td>
+                    </tr>
+                `;
+                mainTable.appendChild(tfoot);
             }
 
             function renderResidentialTable() {
@@ -1440,101 +1609,6 @@
                 }
                 mainTable.appendChild(tfoot);
             }
-
-            function renderQCSummaryTable() {
-                const mainTable = document.getElementById('main-table');
-                mainTable.innerHTML = '';
-                
-                const thead = document.createElement('thead');
-                let headerHTML = `<tr class="bg-slate-200">
-                        <th class="border p-2" rowspan="2"><span>ชั้น</span></th>
-                        <th class="border p-2" colspan="${CONFIG.ROOMS_PER_FLOOR}"><span>ROOM No.</span></th>
-                        <th class="border-y border-l bg-white separator-cell" rowspan="2"></th>
-                        <th class="border p-2 bg-slate-200" colspan="2"><span>สรุป Wet Work</span></th>
-                        <th class="border p-2 bg-slate-200" colspan="2"><span>สรุป End Product</span></th>
-                    </tr>
-                    <tr class="bg-slate-50">`;
-                    for (let i = 1; i <= CONFIG.ROOMS_PER_FLOOR; i++) {
-                        headerHTML += `<th class="border p-1 md:p-2 font-normal"><span>${i}</span></th>`;
-                    }
-                    headerHTML += `<th class="border p-2 bg-teal-100"><span>ผ่าน</span></th>`;
-                    headerHTML += `<th class="border p-2 bg-rose-100"><span>ไม่ผ่าน</span></th>`;
-                    headerHTML += `<th class="border p-2 bg-teal-100"><span>ผ่าน</span></th>`;
-                    headerHTML += `<th class="border p-2 bg-rose-100"><span>ไม่ผ่าน</span></th>`;
-                    headerHTML += '</tr>';
-                thead.innerHTML = headerHTML;
-                mainTable.appendChild(thead);
-
-                const tbody = document.createElement('tbody');
-                const totals = { ww_pass: 0, ww_fail: 0, ep_pass: 0, ep_fail: 0 };
-                
-                const getScoreCellStyle = (score) => {
-                    if (score === undefined || score === null || score === 0) return 'bg-white text-gray-500';
-                    if (score >= 85) return 'bg-teal-100 text-teal-800';
-                    return 'bg-rose-100 text-rose-800';
-                };
-
-                CONFIG.FLOORS.forEach(floor => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td class="border p-2 font-bold bg-slate-100"><span>${floor}</span></td>`;
-                    const roomsOnThisFloor = (floor === 2) ? CONFIG.ROOMS_ON_FLOOR_2 : CONFIG.ROOMS_PER_FLOOR;
-                    
-                    let floor_ww_pass = 0, floor_ww_fail = 0, floor_ep_pass = 0, floor_ep_fail = 0;
-
-                    for (let room = 1; room <= CONFIG.ROOMS_PER_FLOOR; room++) {
-                        if (floor === 2 && room > CONFIG.ROOMS_ON_FLOOR_2) {
-                            row.innerHTML += `<td class="border p-0 bg-slate-200"></td>`;
-                            continue;
-                        }
-                        const wwData = projectData.wetWork?.[floor]?.[room] || {};
-                        const epData = projectData.endProduct?.[floor]?.[room] || {};
-                        
-                        if (wwData.qcScore > 0) {
-                            if (wwData.qcScore >= 85) floor_ww_pass++; else floor_ww_fail++;
-                        }
-                        if (epData.qcScore > 0) {
-                            if (epData.qcScore >= 85) floor_ep_pass++; else floor_ep_fail++;
-                        }
-
-                        const wwScoreText = wwData.qcScore > 0 ? `${Number.isInteger(wwData.qcScore) ? wwData.qcScore : wwData.qcScore.toFixed(2)}${wwData.qcHasMajorDefect ? '!' : ''}` : '-';
-                        const epScoreText = epData.qcScore > 0 ? `${Number.isInteger(epData.qcScore) ? epData.qcScore : epData.qcScore.toFixed(2)}${epData.qcHasMajorDefect ? '!' : ''}` : '-';
-
-                        const wwStyle = getScoreCellStyle(wwData.qcScore);
-                        const epStyle = getScoreCellStyle(epData.qcScore);
-
-                        row.innerHTML += `
-                            <td class="border p-0 text-center text-xs font-semibold">
-                                <div class="p-1 border-b ${wwStyle}">WW: ${wwScoreText}</div>
-                                <div class="p-1 ${epStyle}">EP: ${epScoreText}</div>
-                            </td>`;
-                    }
-                    
-                    totals.ww_pass += floor_ww_pass;
-                    totals.ww_fail += floor_ww_fail;
-                    totals.ep_pass += floor_ep_pass;
-                    totals.ep_fail += floor_ep_fail;
-
-                    row.innerHTML += `<td class="border-y border-l bg-white separator-cell"></td>`;
-                    row.innerHTML += `<td class="border p-2 summary-cell text-green-700">${floor_ww_pass}</td>`;
-                    row.innerHTML += `<td class="border p-2 summary-cell text-red-700">${floor_ww_fail}</td>`;
-                    row.innerHTML += `<td class="border p-2 summary-cell text-green-700">${floor_ep_pass}</td>`;
-                    row.innerHTML += `<td class="border p-2 summary-cell text-red-700">${floor_ep_fail}</td>`;
-                    tbody.appendChild(row);
-                });
-                mainTable.appendChild(tbody);
-
-                const tfoot = document.createElement('tfoot');
-                let footerHTML = `<tr class="font-bold bg-slate-200">
-                    <td class="border p-2" colspan="${CONFIG.ROOMS_PER_FLOOR + 1}"><span>TOTAL ( ${CONFIG.TOTAL_UNITS} UNIT )</span></td>
-                    <td class="border-y border-l bg-white separator-cell"></td>
-                    <td class="border p-2 bg-teal-100">${totals.ww_pass}</td>
-                    <td class="border p-2 bg-rose-100">${totals.ww_fail}</td>
-                    <td class="border p-2 bg-teal-100">${totals.ep_pass}</td>
-                    <td class="border p-2 bg-rose-100">${totals.ep_fail}</td>
-                    </tr>`;
-                tfoot.innerHTML = footerHTML;
-                mainTable.appendChild(tfoot);
-            }
             
             function highlightChanges(oldData, newData) {
                 if (currentView === 'residential') {
@@ -1553,7 +1627,7 @@
                             }
                         }
                     });
-                } else { // common area
+                } else if (currentView === 'common') {
                     if (!oldData.commonArea || !newData.commonArea) return;
                     Object.keys(commonAreaDefinitions).forEach(locKey => {
                         const locDef = commonAreaDefinitions[locKey];
@@ -1570,6 +1644,23 @@
                                 }
                             });
                         });
+                    });
+                } else { // qcSummary view
+                     CONFIG.FLOORS.forEach(floor => {
+                        const roomsOnThisFloor = (floor === 2) ? CONFIG.ROOMS_ON_FLOOR_2 : CONFIG.ROOMS_PER_FLOOR;
+                        for (let room = 1; room <= roomsOnThisFloor; room++) {
+                            ['wetWork', 'endProduct'].forEach(qcType => {
+                                const oldUnitData = oldData[qcType]?.[floor]?.[room];
+                                const newUnitData = newData[qcType]?.[floor]?.[room];
+                                if (JSON.stringify(oldUnitData) !== JSON.stringify(newUnitData)) {
+                                    const cell = document.querySelector(`.table-cell[data-floor='${floor}'][data-room='${room}'][data-qc-type='${qcType}']`);
+                                    if (cell) {
+                                        cell.classList.remove('cell-updated');
+                                        setTimeout(() => cell.classList.add('cell-updated'), 10);
+                                    }
+                                }
+                            });
+                        }
                     });
                 }
             }
@@ -1588,19 +1679,19 @@
             
             function updateUI() {
                 const isCommonView = currentView === 'common';
-                const isQCSummaryView = currentView === 'qc_summary';
+                const isQCSummaryView = currentView === 'qcSummary';
                 const categoryDef = taskDefinitions[currentCategory];
 
                 document.getElementById('dropdown-container').style.display = isCommonView || isQCSummaryView ? 'none' : 'flex';
                 document.getElementById('legend').style.display = isCommonView ? 'none' : 'flex';
-                document.getElementById('openReportModalBtn').style.display = isCommonView || isQCSummaryView ? 'none' : 'inline-flex';
+                document.getElementById('openReportModalBtn').style.display = isCommonView ? 'none' : 'inline-flex';
                 document.getElementById('openCommonAreaReportModalBtn').style.display = isCommonView ? 'inline-flex' : 'none';
                 
                 let title = '';
                 if (isCommonView) {
                     title = 'STATUS งานพื้นที่ส่วนกลาง';
                 } else if (isQCSummaryView) {
-                    title = 'สรุปคะแนน QC: WET WORK & END PRODUCT';
+                    title = 'STATUS สรุปผล QC';
                 } else {
                     title = categoryDef.title;
                 }
@@ -1628,15 +1719,14 @@
                 const legend = document.getElementById('legend');
                 legend.innerHTML = '<strong>คำอธิบาย:</strong>';
                 
-                if (currentView === 'qc_summary') {
-                    legend.innerHTML += `<div class="flex items-center gap-2"><div class="px-2 py-1 rounded bg-teal-100 text-teal-800">ผ่าน</div><span>คะแนน >= 85</span></div>`;
-                    legend.innerHTML += `<div class="flex items-center gap-2"><div class="px-2 py-1 rounded bg-rose-100 text-rose-800">ไม่ผ่าน</div><span>คะแนน < 85</span></div>`;
-                    legend.innerHTML += `<div class="flex items-center gap-2"><div class="px-2 py-1 rounded bg-gray-100 text-gray-800">WW</div><span>Wet Work</span></div>`;
-                    legend.innerHTML += `<div class="flex items-center gap-2"><div class="px-2 py-1 rounded bg-gray-100 text-gray-800">EP</div><span>End Product</span></div>`;
-                    legend.innerHTML += `<div class="flex items-center gap-2"><span class="font-bold text-lg">!</span><span>พบ Major Defect</span></div>`;
-                    return;
+                if (currentView === 'qcSummary') {
+                     legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded bg-yellow-400"></div><span>อยู่ระหว่างตรวจสอบ</span></div>`;
+                     legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded bg-teal-500"></div><span>ผ่าน (>= 85)</span></div>`;
+                     legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded bg-rose-500"></div><span>ไม่ผ่าน (< 85)</span></div>`;
+                     legend.innerHTML += `<div class="flex items-center gap-2"><span class="font-bold text-lg">!</span><span>พบ Major Defect</span></div>`;
+                     return;
                 }
-
+                
                 const categoryDef = taskDefinitions[currentCategory];
                 if (!categoryDef) return; // Guard against missing definition
 
@@ -1724,7 +1814,7 @@
             }
 
             function openUpdateModal(cell) {
-                if (currentView === 'residential') {
+                if (currentView === 'residential' || currentView === 'qcSummary') {
                     openResidentialUpdateModal();
                 } else {
                     openCommonAreaUpdateModal(cell);
@@ -1882,7 +1972,7 @@
                 
                 const updatedData = JSON.parse(JSON.stringify(projectData));
 
-                if (currentView === 'residential') {
+                if (currentView === 'residential' || currentView === 'qcSummary') {
                     applyResidentialProgressUpdates(updatedData);
                 } else {
                     applyCommonAreaProgressUpdates(updatedData);
@@ -3356,15 +3446,23 @@
                 });
 
                 const viewResidentialBtn = document.getElementById('view-residential-btn');
-                const viewCommonBtn = document.getElementById('view-common-btn');
                 const viewQCSummaryBtn = document.getElementById('view-qc-summary-btn');
+                const viewCommonBtn = document.getElementById('view-common-btn');
 
                 viewResidentialBtn.addEventListener('click', () => {
                     if (currentView === 'residential') return;
                     currentView = 'residential';
                     viewResidentialBtn.classList.add('active');
-                    viewCommonBtn.classList.remove('active');
                     viewQCSummaryBtn.classList.remove('active');
+                    viewCommonBtn.classList.remove('active');
+                    renderTable();
+                });
+                viewQCSummaryBtn.addEventListener('click', () => {
+                    if (currentView === 'qcSummary') return;
+                    currentView = 'qcSummary';
+                    viewQCSummaryBtn.classList.add('active');
+                    viewResidentialBtn.classList.remove('active');
+                    viewCommonBtn.classList.remove('active');
                     renderTable();
                 });
                 viewCommonBtn.addEventListener('click', () => {
@@ -3373,14 +3471,6 @@
                     viewCommonBtn.classList.add('active');
                     viewResidentialBtn.classList.remove('active');
                     viewQCSummaryBtn.classList.remove('active');
-                    renderTable();
-                });
-                viewQCSummaryBtn.addEventListener('click', () => {
-                    if (currentView === 'qc_summary') return;
-                    currentView = 'qc_summary';
-                    viewQCSummaryBtn.classList.add('active');
-                    viewResidentialBtn.classList.remove('active');
-                    viewCommonBtn.classList.remove('active');
                     renderTable();
                 });
 
@@ -3398,14 +3488,21 @@
 
                 const mainTable = document.getElementById('main-table');
                 mainTable.addEventListener('mousedown', (e) => {
-                    if (currentView === 'qc_summary') return;
                     const cell = e.target.closest('.table-cell');
                     if (!cell) return;
                     e.preventDefault();
                     isSelecting = true;
-                    if (!e.ctrlKey) clearSelection();
+
+                    if (currentView === 'qcSummary' || !e.ctrlKey) {
+                        clearSelection();
+                    }
+                    
                     cell.classList.toggle('selection-active');
-                    if (cell.classList.contains('selection-active')) selectedCells.add(cell); else selectedCells.delete(cell);
+                    if (cell.classList.contains('selection-active')) {
+                        selectedCells.add(cell);
+                    } else {
+                        selectedCells.delete(cell);
+                    }
                 });
                 mainTable.addEventListener('mouseover', (e) => {
                     if (!isSelecting) return;
@@ -3418,7 +3515,21 @@
                 document.addEventListener('mouseup', () => {
                     if (isSelecting) {
                         isSelecting = false;
-                        if (selectedCells.size > 0) openUpdateModal(selectedCells.values().next().value);
+                        if (currentView === 'qcSummary' && selectedCells.size > 1) {
+                            showToast("ไม่สามารถเลือกหลายรายการในมุมมองสรุป QC ได้", 2500);
+                            clearSelection();
+                            return;
+                        }
+                        if (selectedCells.size > 0) {
+                            const firstCell = selectedCells.values().next().value;
+                             if (currentView === 'qcSummary') {
+                                const qcType = firstCell.dataset.qcType;
+                                if (qcType && taskDefinitions[qcType]) {
+                                    currentCategory = qcType;
+                                }
+                            }
+                            openUpdateModal(firstCell);
+                        }
                     }
                 });
                 
