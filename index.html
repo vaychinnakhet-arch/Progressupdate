@@ -1161,7 +1161,7 @@
                         <th class="border p-2" rowspan="2"><span>ชั้น</span></th>
                         <th class="border p-2" colspan="${CONFIG.ROOMS_PER_FLOOR}"><span>ROOM No.</span></th>
                         <th class="border-y border-l bg-white separator-cell" rowspan="2"></th>
-                        <th class="border p-2 bg-slate-200" colspan="${isInspection ? 2 : categoryTasks.length}"><span>จำนวน</span></th>
+                        <th class="border p-2 bg-slate-200" colspan="${isInspection ? 3 : categoryTasks.length}"><span>${isInspection ? 'สรุปผลตรวจ' : 'จำนวน'}</span></th>
                         <th class="border p-2 bg-teal-200" rowspan="2"><span>ผ่าน/เสร็จ</span></th>
                         <th class="border p-2 bg-rose-200" rowspan="2"><span>คงเหลือ</span></th>
                     </tr>
@@ -1169,17 +1169,23 @@
                     for (let i = 1; i <= CONFIG.ROOMS_PER_FLOOR; i++) {
                         headerHTML += `<th class="border p-1 md:p-2 font-normal"><span>${i}</span></th>`;
                     }
-                    categoryTasks.forEach(task => {
-                        const colorName = task.color.split('-')[1];
-                        headerHTML += `<th class="border p-2 bg-${colorName}-100 text-black font-semibold"><span>${task.name}</span></th>`;
-                    });
+                    if (isInspection) {
+                        headerHTML += `<th class="border p-2 bg-slate-100 font-semibold"><span>ส่งแล้ว</span></th>`;
+                        headerHTML += `<th class="border p-2 bg-teal-100 font-semibold"><span>ผ่าน</span></th>`;
+                        headerHTML += `<th class="border p-2 bg-rose-100 font-semibold"><span>ไม่ผ่าน</span></th>`;
+                    } else {
+                        categoryTasks.forEach(task => {
+                            const colorName = task.color.split('-')[1];
+                            headerHTML += `<th class="border p-2 bg-${colorName}-100 text-black font-semibold"><span>${task.name}</span></th>`;
+                        });
+                    }
                     headerHTML += '</tr>';
                 }
                 thead.innerHTML = headerHTML;
                 mainTable.appendChild(thead);
 
                 const tbody = document.createElement('tbody');
-                const totals = isDetailedView ? {} : Array(isInspection ? 2 : categoryTasks.length).fill(0);
+                const totals = isDetailedView ? {} : Array(isInspection ? 3 : categoryTasks.length).fill(0);
                 let totalCompleted = 0;
 
                 CONFIG.FLOORS.forEach(floor => {
@@ -1330,18 +1336,29 @@
                         row.innerHTML += `<td class="border-y border-l bg-white separator-cell"></td>`;
                         let floorCompleted = 0;
                         if (isInspection) {
-                            let floorCmSubmitted = 0, floorQcSubmitted = 0;
+                            let floorSubmitted = 0, floorPassed = 0, floorFailed = 0;
                             for (let room = 1; room <= roomsOnThisFloor; room++) {
                                 const unitData = projectData[currentCategory]?.[floor]?.[room] || {};
-                                if(unitData.cmScore > 0) floorCmSubmitted++;
-                                if(unitData.qcScore > 0) floorQcSubmitted++;
-                                const score = unitData.qcScore > 0 ? unitData.qcScore : unitData.cmScore;
-                                 if (score >= 85) floorCompleted++;
+                                const hasCmScore = (unitData.cmScore || 0) > 0;
+                                const hasQcScore = (unitData.qcScore || 0) > 0;
+
+                                if (hasCmScore || hasQcScore) {
+                                    floorSubmitted++;
+                                    const score = hasQcScore ? unitData.qcScore : unitData.cmScore;
+                                    if (score >= 85) {
+                                        floorPassed++;
+                                    } else {
+                                        floorFailed++;
+                                    }
+                                }
                             }
-                            row.innerHTML += `<td class="border p-2 summary-cell"><span>${floorCmSubmitted}</span></td>`;
-                            row.innerHTML += `<td class="border p-2 summary-cell"><span>${floorQcSubmitted}</span></td>`;
-                            totals[0] += floorCmSubmitted;
-                            totals[1] += floorQcSubmitted;
+                            floorCompleted = floorPassed;
+                            row.innerHTML += `<td class="border p-2 summary-cell"><span>${floorSubmitted}</span></td>`;
+                            row.innerHTML += `<td class="border p-2 summary-cell bg-teal-50"><span>${floorPassed}</span></td>`;
+                            row.innerHTML += `<td class="border p-2 summary-cell bg-rose-50"><span>${floorFailed}</span></td>`;
+                            totals[0] += floorSubmitted;
+                            totals[1] += floorPassed;
+                            totals[2] += floorFailed;
                         } else if (isMultiProgress) {
                              const floorCounts = Array(categoryTasks.length).fill(0);
                                for (let room = 1; room <= roomsOnThisFloor; room++) {
@@ -1409,8 +1426,13 @@
                     let footerHTML = `<tr class="font-bold bg-slate-200">
                         <td class="border p-2" colspan="${CONFIG.ROOMS_PER_FLOOR + 1}"><span>TOTAL ( ${CONFIG.TOTAL_UNITS} UNIT )</span></td>
                         <td class="border-y border-l bg-white separator-cell"></td>`;
-                    totals.forEach(total => {
-                        footerHTML += `<td class="border p-2 bg-slate-100"><span>${total}</span></td>`;
+                    totals.forEach((total, index) => {
+                        let bgColor = 'bg-slate-100';
+                        if (isInspection) {
+                            if (index === 1) bgColor = 'bg-teal-100';
+                            if (index === 2) bgColor = 'bg-rose-100';
+                        }
+                        footerHTML += `<td class="border p-2 ${bgColor}"><span>${total}</span></td>`;
                     });
                     footerHTML += `<td class="border p-2 bg-teal-100"><span>${totalCompleted}</span></td>`;
                     footerHTML += `<td class="border p-2 bg-rose-100"><span>${totalRemaining}</span></td></tr>`;
@@ -2484,16 +2506,8 @@
                          <div>
                              <input type="checkbox" id="report-room-summary" class="hidden">
                              <label for="report-room-summary" class="report-selection-label">
-                                  <span class="box">${checkIconSVG}</span><span>แนบสรุปคะแนน</span>
+                                  <span class="box">${checkIconSVG}</span><span>แนบสรุปคะแนน (รวมทุกผลตรวจ)</span>
                              </label>
-                         </div>
-                         <div class="pl-8 space-y-1 mt-1">
-                             <div class="report-toggle-container flex w-full bg-slate-200 rounded-full p-1 text-sm">
-                                 <input type="radio" id="report-room-summary-type-cm" name="report-room-summary-type" value="CM" class="hidden" checked>
-                                 <label for="report-room-summary-type-cm" class="flex-1 text-center py-1 rounded-full cursor-pointer transition-colors">CM</label>
-                                 <input type="radio" id="report-room-summary-type-qc" name="report-room-summary-type" value="QC" class="hidden">
-                                 <label for="report-room-summary-type-qc" class="flex-1 text-center py-1 rounded-full cursor-pointer transition-colors">QC</label>
-                             </div>
                          </div>
                     </div>
                 </div>`;
@@ -2811,7 +2825,6 @@
                     includeSummary: document.getElementById('report-include-summary').checked,
                     reportType: document.querySelector('input[name="report-type"]:checked').value,
                     includeRoomSummary: document.getElementById('report-room-summary')?.checked || false,
-                    roomSummaryType: document.querySelector('input[name="report-room-summary-type"]:checked')?.value || 'CM',
                 };
 
                 document.querySelectorAll('.report-main-task-container').forEach(container => {
@@ -2830,7 +2843,7 @@
 
             function prepareRawReportText() {
                 const selections = getReportSelections();
-                const { orderedTaskKeys, tasks, floors, includeSummary, reportType, includeRoomSummary, roomSummaryType } = selections;
+                const { orderedTaskKeys, tasks, floors, includeSummary, reportType, includeRoomSummary } = selections;
                 
                 if (orderedTaskKeys.length === 0 || (!floors.length && !includeSummary)) {
                     showNotificationModal('ข้อมูลไม่เพียงพอ', "กรุณาเลือก 'งาน' และ 'ชั้น' (หรือ 'ภาพรวมทั้งโครงการ') ที่ต้องการสรุปเป็นอย่างน้อย");
@@ -2846,30 +2859,36 @@
                     const catDef = taskDefinitions[catKey];
                     let categorySection = `\n${catDef.reportEmoji} ${catDef.reportName}\n`;
                     if (catDef.type === 'inspection') {
-                        const total = isSummary ? CONFIG.TOTAL_UNITS : floorsToCalc.reduce((acc, f) => acc + ((f===2) ? CONFIG.ROOMS_ON_FLOOR_2 : CONFIG.ROOMS_PER_FLOOR), 0);
-                        const stage = 'QC'; // Only process QC
-                        const stats = calculateInspectionStats(catKey, stage, floorsToCalc);
-                        const passed_total = stats.passed_clean + stats.passed_defect;
-                        const failed_total = stats.failed_clean + stats.failed_defect;
+                        let submittedCount = 0;
+                        let passedCount = 0;
+                        let failedCount = 0;
+                        const totalRooms = isSummary ? CONFIG.TOTAL_UNITS : floorsToCalc.reduce((acc, f) => acc + ((f === 2) ? CONFIG.ROOMS_ON_FLOOR_2 : CONFIG.ROOMS_PER_FLOOR), 0);
 
-                        let passLine = `       - ผ่าน: ${passed_total} ห้อง`;
-                        if (stats.passed_defect > 0) {
-                            passLine += ` (พบ Major Defect: ${stats.passed_defect} ห้อง)`;
-                        }
+                        floorsToCalc.forEach(floor => {
+                            const roomsOnThisFloor = (floor === 2) ? CONFIG.ROOMS_ON_FLOOR_2 : CONFIG.ROOMS_PER_FLOOR;
+                            for (let room = 1; room <= roomsOnThisFloor; room++) {
+                                const unitData = projectData[catKey]?.[floor]?.[room] || {};
+                                const qcScore = unitData.qcScore || 0;
+                                const cmScore = unitData.cmScore || 0;
+                                const finalScore = qcScore > 0 ? qcScore : cmScore;
 
-                        let failLine = `       - ไม่ผ่าน: ${failed_total} ห้อง`;
-                        if (stats.failed_defect > 0) {
-                            failLine += ` (พบ Major Defect: ${stats.failed_defect} ห้อง)`;
-                        }
-                        
-                        categorySection += `  **${stage}**:\n`;
-                        categorySection += `     • ส่งตรวจแล้ว: ${stats.submitted}/${total} ห้อง\n`;
-                        if (stats.inInspection > 0) {
-                            categorySection += `     • อยู่ระหว่างตรวจสอบ: ${stats.inInspection} ห้อง\n`;
-                        }
-                        categorySection += `     • ผลการตรวจ:\n`;
-                        categorySection += `${passLine}\n`;
-                        categorySection += `${failLine}\n`;
+                                if (finalScore > 0) {
+                                    submittedCount++;
+                                    if (finalScore >= 85) {
+                                        passedCount++;
+                                    } else {
+                                        failedCount++;
+                                    }
+                                }
+                            }
+                        });
+
+                        categorySection += `  ภาพรวม (${totalRooms} ห้อง):\n`;
+                        categorySection += `     • ส่งตรวจแล้ว: ${submittedCount} ห้อง\n`;
+                         if (reportType === 'long') {
+                             categorySection += `     • ผ่าน: ${passedCount} ห้อง\n`;
+                             categorySection += `     • ไม่ผ่าน: ${failedCount} ห้อง\n`;
+                         }
 
                     } else if (catDef.type === 'multi-progress') {
                         const overallProgress = calculateMultiProgressOverallPercentage(catKey, floorsToCalc, tasks[catKey]);
@@ -2918,7 +2937,7 @@
                 
                 if (includeRoomSummary && floors.length) {
                       report += `\n\n------------------------------------\n`;
-                      report += `\n📋 สรุปคะแนนรายห้อง (${roomSummaryType})\n`;
+                      report += `\n📋 สรุปคะแนนรายห้อง\n`;
                        orderedTaskKeys.forEach(catKey => {
                            const catDef = taskDefinitions[catKey];
                            if (catDef.type === 'inspection' && tasks[catKey] && tasks[catKey].length > 0) {
@@ -2926,17 +2945,38 @@
                                floors.forEach(floor => {
                                    report += `  --- ชั้น ${floor} ---\n`;
                                    const roomsOnThisFloor = (floor === 2) ? CONFIG.ROOMS_ON_FLOOR_2 : CONFIG.ROOMS_PER_FLOOR;
+                                   let foundRoom = false;
                                    for (let room = 1; room <= roomsOnThisFloor; room++) {
                                        const roomNumber = `${floor}${String(room).padStart(2, '0')}`;
                                        const unitData = projectData[catKey][floor][room];
-                                       const score = (roomSummaryType === 'CM') ? unitData.cmScore : unitData.qcScore;
+                                       
+                                        let score = 0;
+                                        let defect = false;
+                                        let stageLabel = '';
+
+                                        if (unitData.qcScore > 0 && unitData.cmScore > 0 && unitData.qcScore === unitData.cmScore) {
+                                            score = unitData.qcScore;
+                                            defect = unitData.qcHasMajorDefect;
+                                            stageLabel = 'QC-CM';
+                                        } else if (unitData.qcScore > 0) {
+                                            score = unitData.qcScore;
+                                            defect = unitData.qcHasMajorDefect;
+                                            stageLabel = 'QC';
+                                        } else if (unitData.cmScore > 0) {
+                                            score = unitData.cmScore;
+                                            defect = unitData.cmHasMajorDefect;
+                                            stageLabel = 'CM';
+                                        }
                                        
                                        if (score > 0) {
-                                           const defect = (roomSummaryType === 'CM') ? unitData.cmHasMajorDefect : unitData.qcHasMajorDefect;
+                                           foundRoom = true;
                                            const status = score >= 85 ? 'ผ่าน' : 'ไม่ผ่าน';
                                            const defectText = defect ? ' [พบ Major Defect]' : '';
-                                            report += `    ห้อง ${roomNumber}: ${status} (${score.toFixed(2)})${defectText}\n`;
+                                           report += `    ห้อง ${roomNumber}: ${status} (${score.toFixed(2)}) โดย ${stageLabel}${defectText}\n`;
                                        }
+                                   }
+                                   if (!foundRoom) {
+                                     report += '    ไม่มีห้องที่ตรวจแล้ว\n';
                                    }
                                });
                            }
