@@ -763,7 +763,7 @@
                 topping: { name: 'งานเท TOPPING', reportName: 'งานเทปรับระดับพื้นห้องพัก', reportEmoji: '🛠️', title: 'STATUS งานเท TOPPING', type: 'progress', tasks: [ { name: 'จับปุ่ม/ขังน้ำ', color: 'bg-violet-500', textColor: 'text-white' }, { name: 'เท Topping', color: 'bg-teal-500', textColor: 'text-white' } ] },
                 ceiling: { name: 'งานติดตั้งฝ้า', reportName: 'งานติดตั้งฝ้าห้องพัก-ห้องน้ำ', reportEmoji: '🪜', title: 'STATUS งานติดตั้งฝ้า', type: 'progress', tasks: [ { name: 'ขึ้นโครง', color: 'bg-purple-500', textColor: 'text-white' }, { name: 'ติดแผ่น', color: 'bg-lime-500', textColor: 'text-white' } ] },
                 texcaWall: { name: 'งานผนัง TEXCA', reportName: 'งานผนัง TEXCA', reportEmoji: '🧱', title: 'STATUS งานผนัง TEXCA WALL', type: 'progress', tasks: [ { name: 'ตีไลน์', color: 'bg-gray-400', textColor: 'text-white' }, { name: 'เขิบ', color: 'bg-stone-500', textColor: 'text-white' }, { name: 'TEXCA', color: 'bg-cyan-500', textColor: 'text-white' } ] },
-                furniture: { name: 'งานติดตั้งเฟอร์นิเจอร์', reportName: 'งานติดตั้งเฟอร์นิเจอร์', reportEmoji: '🛋️', title: 'STATUS งานติดตั้งเฟอร์นิเจอร์', type: 'progress', tasks: [ { name: 'ติดตั้งชุดครัว', color: 'bg-orange-500', textColor: 'text-white' }, { name: 'ติดตั้งเฟอร์นิเจอร์', color: 'bg-lime-500', textColor: 'text-white' }, ] },
+                furniture: { name: 'งานติดตั้งเฟอร์นิเจอร์', reportName: 'งานติดตั้งเฟอร์นิเจอร์', reportEmoji: '🛋️', title: 'STATUS งานติดตั้งเฟอร์นิเจอร์', type: 'progress', tasks: [ { name: 'ติดตั้งชุดครัว', color: 'bg-orange-500', textColor: 'text-white' }, { name: 'ติดตั้งตู้เสื้อผ้า', color: 'bg-lime-500', textColor: 'text-white' }, ] },
                 laminate: { name: 'งานปูพื้นไม้ลามิเนต', reportName: 'งานปูพื้นไม้ลามิเนต', reportEmoji: '🌲', title: 'STATUS งานปูพื้นไม้ลามิเนต', type: 'progress', tasks: [ { name: 'ตรวจรับพื้นที่', color: 'bg-yellow-500', textColor: 'text-black' }, { name: 'ปูพื้นไม้', color: 'bg-amber-800', textColor: 'text-white' }, ] },
                 waterproofing: { name: 'งานกันซึม', reportName: 'งานกันซึม', reportEmoji: '🛡️', title: 'STATUS งานกันซึม', type: 'multi-progress', tasks: [ { name: 'ห้องน้ำ', key: 'bathroom', shortName: 'น้ำ', color: 'bg-indigo-500', textColor: 'text-white' }, { name: 'ระเบียง', key: 'balcony', shortName: 'รบ.', color: 'bg-cyan-500', textColor: 'text-white' } ] },
                 tiling: { name: 'งานปูกระเบื้อง', reportName: 'งานปูกระเบื้อง', reportEmoji: '🟧', title: 'STATUS งานปูกระเบื้อง', type: 'multi-progress', hasDetailedView: true, tasks: [ { name: 'ห้องน้ำ', key: 'bathroom', shortName: 'น้ำ', color: 'bg-teal-500', textColor: 'text-white' }, { name: 'ระเบียง', key: 'balcony', shortName: 'รบ.', color: 'bg-lime-600', textColor: 'text-white' }, { name: 'ครัว', key: 'kitchen', shortName: 'ครัว', color: 'bg-rose-500', textColor: 'text-white' } ] },
@@ -1161,31 +1161,33 @@
                 };
 
                 const renderCellContent = (unitData) => {
-                    let styleClasses = 'bg-white text-black';
-                    let cellText = '0';
                     if (unitData.inInspection) {
-                        styleClasses = 'bg-yellow-400 text-black';
-                        cellText = 'ตรวจสอบ';
-                    } else {
-                        let scoreToShow = 0, defectToShow = false, stageLabel = '';
-                        if (unitData.qcScore > 0 && unitData.qcScore === unitData.cmScore) {
-                            scoreToShow = unitData.qcScore;
-                            defectToShow = unitData.qcHasMajorDefect;
-                            stageLabel = 'QC-CM: ';
-                        } else if (unitData.qcScore > 0) {
-                            scoreToShow = unitData.qcScore;
-                            defectToShow = unitData.qcHasMajorDefect;
-                            stageLabel = 'QC: ';
-                        } else if (unitData.cmScore > 0) {
-                            scoreToShow = unitData.cmScore;
-                            defectToShow = unitData.cmHasMajorDefect;
-                            stageLabel = 'CM: ';
-                        }
-                        if (scoreToShow > 0) styleClasses = scoreToShow >= 85 ? 'bg-teal-500 text-white' : 'bg-rose-500 text-white';
-                        cellText = scoreToShow > 0 ? `${stageLabel}${Number.isInteger(scoreToShow) ? scoreToShow : scoreToShow.toFixed(2)}` : '0';
-                        if (defectToShow) cellText += '!';
+                        return { styleClasses: 'bg-yellow-400 text-black', cellText: 'ตรวจสอบ' };
                     }
-                    return { styleClasses, cellText };
+
+                    let scoreToShow = 0, defectToShow = false, stageLabel = '';
+                    if (unitData.qcScore > 0 && unitData.qcScore === unitData.cmScore) {
+                        scoreToShow = unitData.qcScore;
+                        defectToShow = unitData.qcHasMajorDefect;
+                        stageLabel = 'QC-CM: ';
+                    } else if (unitData.qcScore > 0) {
+                        scoreToShow = unitData.qcScore;
+                        defectToShow = unitData.qcHasMajorDefect;
+                        stageLabel = 'QC: ';
+                    } else if (unitData.cmScore > 0) {
+                        scoreToShow = unitData.cmScore;
+                        defectToShow = unitData.cmHasMajorDefect;
+                        stageLabel = 'CM: ';
+                    }
+
+                    if (scoreToShow > 0) {
+                        const styleClasses = scoreToShow >= 85 ? 'bg-teal-500 text-white' : 'bg-rose-500 text-white';
+                        let cellText = `${stageLabel}${Number.isInteger(scoreToShow) ? scoreToShow : scoreToShow.toFixed(2)}`;
+                        if (defectToShow) cellText += '!';
+                        return { styleClasses, cellText };
+                    } else {
+                        return { styleClasses: 'bg-white text-slate-400', cellText: '-' };
+                    }
                 };
 
                 CONFIG.FLOORS.forEach(floor => {
@@ -1426,6 +1428,7 @@
                             const unitData = projectData[currentCategory]?.[floor]?.[room] || {};
                             let styleClasses = 'bg-white text-black';
                             let cellText = '0';
+                            
                             if (isInspection) {
                                 if (unitData.inInspection) {
                                     styleClasses = 'bg-yellow-400 text-black';
@@ -1445,9 +1448,15 @@
                                         defectToShow = unitData.cmHasMajorDefect;
                                         stageLabel = 'CM: ';
                                     }
-                                    if (scoreToShow > 0) styleClasses = scoreToShow >= 85 ? 'bg-teal-500 text-white' : 'bg-rose-500 text-white';
-                                    cellText = scoreToShow > 0 ? `${stageLabel}${Number.isInteger(scoreToShow) ? scoreToShow : scoreToShow.toFixed(2)}` : '0';
-                                    if (defectToShow) cellText += '!';
+                                    
+                                    if (scoreToShow > 0) {
+                                        styleClasses = scoreToShow >= 85 ? 'bg-teal-500 text-white' : 'bg-rose-500 text-white';
+                                        cellText = `${stageLabel}${Number.isInteger(scoreToShow) ? scoreToShow : scoreToShow.toFixed(2)}`;
+                                        if (defectToShow) cellText += '!';
+                                    } else {
+                                        styleClasses = 'bg-white text-slate-400';
+                                        cellText = '-';
+                                    }
                                 }
                             } else if (isMultiProgress) {
                                  let totalProgress = 0;
