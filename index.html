@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -6,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบติดตามความคืบหน้างาน (Supabase)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Sarabun:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
@@ -46,8 +45,30 @@
         }
         .is-line-capturing #controls-area,
         .is-line-capturing #action-buttons-container,
+        .is-line-capturing #unified-controls,
         .is-line-capturing #home-btn-container {
-            display: none;
+            display: none !important;
+        }
+        .is-line-capturing #header-title-container {
+            width: 100% !important;
+            text-align: center !important;
+            position: absolute;
+            left: 0;
+            right: 0;
+            pointer-events: none;
+            display: block !important;
+        }
+        .is-line-capturing #header-date-container {
+            position: absolute;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: auto !important;
+            z-index: 20;
+        }
+        .is-line-capturing .floor-separator {
+            border-top-width: 4px !important;
+            border-top-color: #cbd5e1 !important; /* slate-300 */
         }
 
         .table-cell {
@@ -83,9 +104,9 @@
         }
         .view-toggle-btn.active {
             background-color: #ffffff; /* white */
-            color: #4338ca; /* indigo-700 */
+            color: #4f46e5; /* indigo-600 */
             font-weight: 600;
-            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         }
         
         .text-shadow-md {
@@ -225,26 +246,69 @@
 
         /* SPLASH SCREEN STYLES */
         #splash-screen {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: linear-gradient(135deg, #e0e7ff 0%, #f1f5f9 50%, #cffafe 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        #splash-screen::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            left: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            z-index: 0;
+        }
+        #splash-screen::after {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            right: -10%;
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(circle, rgba(6,182,212,0.15) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            z-index: 0;
+        }
+        .splash-content {
+            position: relative;
+            z-index: 10;
+        }
+        .title-text {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(to right, #4f46e5, #0891b2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0px 4px 10px rgba(79, 70, 229, 0.15);
         }
         .splash-card {
-            transition: all 0.2s ease-in-out;
+            background-color: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s ease;
+            border: 1px solid #f1f5f9;
         }
         .splash-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
         }
         .splash-nav-card {
-            transition: all 0.3s ease-in-out;
-            background-size: 200% 100%;
+            background-color: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+            color: #1e293b;
         }
         .splash-nav-card:hover {
-             transform: translateY(-5px);
-             box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-             background-position: right center;
+             transform: translateY(-2px);
+             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+             border-color: #cbd5e1;
         }
         .splash-nav-card h3 {
-             text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+             text-shadow: none;
         }
         
         /* QUICK UPDATE MODE - iOS Redesign */
@@ -459,76 +523,82 @@
         }
 
     </style>
+<link rel="stylesheet" href="/index.css">
 </head>
 <body class="p-2 md:p-4">
 
     <!-- Splash Screen -->
     <div id="splash-screen" class="min-h-screen flex items-center justify-center p-4">
-        <div class="w-full max-w-5xl mx-auto">
-            <div class="text-center">
-                <h1 class="text-4xl md:text-6xl font-extrapold text-slate-800 mb-2">Vay Chinnakhet</h1>
-                <p class="text-lg md:text-xl text-slate-600 mb-8 md:mb-12">ระบบติดตามความคืบหน้าโครงการ</p>
+        <div class="w-full max-w-4xl mx-auto splash-content">
+            <div class="text-center mb-12">
+                <h1 class="text-5xl md:text-7xl font-extrabold mb-3 tracking-tight title-text">Vay Chinnakhet</h1>
+                <p class="text-lg md:text-xl text-slate-600 font-medium">ระบบติดตามความคืบหน้าโครงการ</p>
             </div>
+            
             <!-- Summary Dashboard -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 md:mb-12">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                 <!-- Overall Progress -->
-                <div class="splash-card bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-white">
-                    <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">ภาพรวมโครงการ</h2>
+                <div class="splash-card p-8 flex flex-col items-center justify-center text-center">
+                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">ภาพรวมโครงการ</h2>
                      <div class="infographic-progress-circle w-32 h-32 rounded-full flex items-center justify-center mx-auto" style="--progress: 0%">
-                        <span id="splash-overall-progress" class="text-3xl font-bold text-gray-800">0%</span>
+                        <span id="splash-overall-progress" class="text-3xl font-bold text-indigo-600">0%</span>
                     </div>
                 </div>
                 <!-- Completed Units -->
-                <div class="splash-card bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-white">
-                    <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">ห้องพักที่เสร็จสมบูรณ์</h2>
-                    <div class="flex items-center justify-center h-32">
-                         <p id="splash-completed-units" class="text-5xl font-extrabold text-emerald-600">0 / 0</p>
+                <div class="splash-card p-8 flex flex-col items-center justify-center text-center">
+                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">ห้องพักที่เสร็จสมบูรณ์</h2>
+                    <div class="flex items-center justify-center flex-1">
+                         <p id="splash-completed-units" class="text-5xl font-bold text-emerald-500">0 <span class="text-2xl text-slate-400 font-medium">/ 0</span></p>
                     </div>
                 </div>
                 <!-- QC Pass Rate -->
-                <div class="splash-card bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-white">
-                    <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">QC PASS RATE</h2>
-                     <div class="flex items-center justify-center h-32">
-                        <p id="splash-qc-pass-rate" class="text-5xl font-extrabold text-indigo-600">0%</p>
+                <div class="splash-card p-8 flex flex-col items-center justify-center text-center">
+                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">QC PASS RATE</h2>
+                     <div class="flex items-center justify-center flex-1">
+                        <p id="splash-qc-pass-rate" class="text-5xl font-bold text-violet-500">0%</p>
                     </div>
                 </div>
             </div>
 
             <!-- Navigation -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                <div id="nav-residential" class="splash-nav-card cursor-pointer p-8 md:p-10 rounded-2xl shadow-xl text-white flex flex-col items-center justify-center" style="background-image: linear-gradient(to right, #43e97b 0%, #38f9d7 51%, #43e97b 100%);">
-                     <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m5-8h1m-1 4h1m-1 4h1M5 21v-3a2 2 0 012-2h10a2 2 0 012 2v3" /></svg>
-                    <h3 class="text-xl font-bold">ระบบติดตาม (ห้องพัก)</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                <div id="nav-residential" class="splash-nav-card cursor-pointer p-8 flex flex-col items-center justify-center group">
+                     <div class="w-16 h-16 rounded-full bg-indigo-50 flex items-center justify-center mb-4 group-hover:bg-indigo-100 transition-colors">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m5-8h1m-1 4h1m-1 4h1M5 21v-3a2 2 0 012-2h10a2 2 0 012 2v3" /></svg>
+                     </div>
+                    <h3 class="text-lg font-semibold text-slate-800 group-hover:text-indigo-700 transition-colors">ระบบติดตาม (ห้องพัก)</h3>
                 </div>
-                 <div id="nav-quick-update" class="splash-nav-card cursor-pointer p-8 md:p-10 rounded-2xl shadow-xl text-white flex flex-col items-center justify-center" style="background-image: linear-gradient(to right, #ff8177 0%, #ff867a 0%, #ff8c7f 21%, #f99185 52%, #cf556c 78%, #b12a5b 100%);">
-                     <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
-                    <h3 class="text-xl font-bold">โหมดอัพเดทหน้างาน</h3>
-                </div>
-                <div id="nav-common-area" class="splash-nav-card cursor-pointer p-8 md:p-10 rounded-2xl shadow-xl text-white flex flex-col items-center justify-center" style="background-image: linear-gradient(to right, #89f7fe 0%, #66a6ff 51%, #89f7fe 100%);">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
-                    <h3 class="text-xl font-bold">ระบบติดตาม (ส่วนกลาง)</h3>
+                <div id="nav-common-area" class="splash-nav-card cursor-pointer p-8 flex flex-col items-center justify-center group">
+                    <div class="w-16 h-16 rounded-full bg-cyan-50 flex items-center justify-center mb-4 group-hover:bg-cyan-100 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-slate-800 group-hover:text-cyan-700 transition-colors">ระบบติดตาม (ส่วนกลาง)</h3>
                 </div>
             </div>
-             <p id="splash-loading-text" class="mt-8 text-slate-500 text-center">กำลังเชื่อมต่อฐานข้อมูล...</p>
+             <p id="splash-loading-text" class="mt-12 text-slate-500 text-sm font-medium text-center tracking-wide">กำลังเชื่อมต่อฐานข้อมูล...</p>
         </div>
     </div>
 
     <!-- Main Application Container -->
     <div id="main-app-container" class="hidden">
-        <div id="capture-area" class="max-w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+        <div id="capture-area" class="max-w-full mx-auto bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
             <!-- Header -->
-            <header class="bg-slate-800 text-white p-4 flex justify-between items-center">
-                <div id="home-btn-container" class="flex items-center gap-4">
-                     <button id="home-btn" class="p-2 rounded-full hover:bg-slate-700 transition-colors" title="กลับสู่หน้าหลัก">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+            <header class="bg-gradient-to-r from-slate-900 to-blue-900 text-white p-5 md:p-6 flex flex-col md:flex-row justify-between items-center gap-4 relative overflow-hidden">
+                
+                <div id="home-btn-container" class="flex items-center gap-4 z-10 w-full md:w-1/4">
+                     <button id="home-btn" class="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-all backdrop-blur-sm border border-white/10 shadow-sm flex items-center justify-center" title="กลับสู่หน้าหลัก">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
                      </button>
-                    <h1 class="text-xl md:text-2xl font-bold tracking-wide text-shadow-md">Vay Chinnakhet</h1>
+                    <h1 class="text-xl md:text-2xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300">Vay Chinnakhet</h1>
                 </div>
-                <div class="w-1/2 text-center">
-                    <p class="text-xl md:text-4xl font-bold tracking-wider opacity-90" id="status-title">STATUS</p>
+                <div id="header-title-container" class="w-full md:w-1/2 text-center z-10">
+                    <p class="text-2xl md:text-4xl font-black tracking-tight text-white drop-shadow-sm" id="status-title">STATUS</p>
                 </div>
-                <div class="w-1/4 text-right">
-                     <p class="text-sm md:text-base">UPDATE: <span id="update-date"></span></p>
+                <div id="header-date-container" class="w-full md:w-1/4 text-center md:text-right z-10 flex flex-col items-center md:items-end">
+                     <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 backdrop-blur-sm border border-white/10 text-xs md:text-sm font-medium text-slate-200">
+                         <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                         <span>UPDATE: <span id="update-date" class="font-bold text-white"></span></span>
+                     </div>
                 </div>
             </header>
 
@@ -539,118 +609,177 @@
                   </table>
 
                   <!-- Legend -->
-                <div id="legend" class="mt-4 p-4 bg-slate-100 rounded-lg flex flex-wrap items-center gap-4 text-xs md:text-sm">
+                <div id="legend" class="mt-4 p-3 bg-slate-50 border border-slate-200 shadow-sm rounded-xl flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium text-slate-700">
                     <!-- JS Generated Content -->
                 </div>
             </main>
         </div>
         
-        <!-- Controls Area -->
-        <div id="controls-area" class="max-w-full mx-auto p-4 mt-4 bg-white rounded-lg shadow-lg flex flex-wrap items-center gap-x-6 gap-y-4">
-            <div class="flex items-center gap-2">
-                <span class="font-bold text-slate-600">มุมมอง:</span>
-                <div id="view-toggle" class="bg-slate-200 p-1 rounded-full text-slate-800 text-xs md:text-sm font-semibold flex">
-                    <button id="view-residential-btn" class="view-toggle-btn px-3 py-1 rounded-full active">ห้องพัก</button>
-                    <button id="view-qc-summary-btn" class="view-toggle-btn px-3 py-1 rounded-full">สรุป QC</button>
-                    <button id="view-common-btn" class="view-toggle-btn px-3 py-1 rounded-full">ส่วนกลาง</button>
-                </div>
-            </div>
-
-            <div id="dropdown-container" class="flex items-center gap-2">
-                <span class="font-bold text-slate-600">เลือกงาน:</span>
-                <select id="task-category" class="bg-slate-50 border border-slate-300 rounded-md px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <!-- JS Generated Content -->
-                </select>
-            </div>
-
-            <div id="tiling-view-toggle" class="flex items-center gap-2 hidden">
-                 <span class="font-bold text-slate-600">รูปแบบ:</span>
-                <div class="bg-slate-200 p-1 rounded-full text-slate-800 text-xs md:text-sm font-semibold flex">
-                    <button id="view-tiling-summary-btn" class="view-toggle-btn px-3 py-1 rounded-full active">สรุป</button>
-                    <button id="view-tiling-detailed-btn" class="view-toggle-btn px-3 py-1 rounded-full">ละเอียด</button>
-                </div>
-            </div>
-        </div>
-        
-          <!-- Action Buttons -->
-        <div id="action-buttons-container" class="max-w-full mx-auto px-2 md:px-4 mt-4 flex flex-wrap justify-end items-center gap-2">
-            <button id="captureBtn" class="action-btn px-4 py-2 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-xs md:text-sm inline-flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                แคปเจอร์ (สำหรับส่งไลน์)
-            </button>
-            <button id="openReportModalBtn" class="action-btn px-4 py-2 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-xs md:text-sm inline-flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-                ทำรายงาน
-            </button>
-            <button id="openCommonAreaReportModalBtn" class="action-btn px-4 py-2 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-xs md:text-sm inline-flex items-center gap-2 hidden">
-                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
-                สร้าง Infographic
-            </button>
-             <input type="file" id="import-file" class="hidden" accept=".json">
-             <label for="import-file" class="action-btn custom-file-button px-4 py-2 bg-slate-500 text-white rounded-md shadow hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-opacity-50 text-xs md:text-sm">
-                 นำเข้าข้อมูล
-             </label>
-            <button id="exportDataBtn" class="action-btn px-4 py-2 bg-slate-500 text-white rounded-md shadow hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-opacity-50 text-xs md:text-sm">
-                ส่งออกข้อมูล
-            </button>
-            <button id="clearDataBtn" class="action-btn px-4 py-2 bg-rose-600 text-white rounded-md shadow hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-opacity-50 text-xs md:text-sm">
-                ล้างข้อมูลทั้งหมด (รีเซ็ต)
-            </button>
-        </div>
-
-        <!-- Update Modal -->
-        <div id="updateModal" class="modal fixed inset-0 w-full h-full items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-            <div class="bg-white rounded-lg shadow-xl p-6 w-11/12 md:w-1/3">
-                <h2 id="modal-title" class="text-xl font-bold mb-4">อัพเดทสถานะ</h2>
-                <p id="modal-description" class="mb-2"></p>
-
-                <div id="modal-progress-view">
-                    <div class="mb-4">
-                        <label for="modal-task-select" class="block text-sm font-medium text-gray-700">งาน:</label>
-                        <select id="modal-task-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
-                        </select>
+        <!-- Unified Controls & Actions Area -->
+        <div id="unified-controls" class="max-w-full mx-auto mt-4 bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-col gap-4">
+            
+            <!-- Top Row: View Toggle & Action Buttons -->
+            <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 w-full">
+                <!-- View Toggle -->
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">มุมมอง</span>
+                    <div id="view-toggle" class="bg-slate-100 p-1 rounded-lg text-slate-600 text-sm font-medium flex">
+                        <button id="view-residential-btn" class="view-toggle-btn px-4 py-1.5 rounded-md active">ห้องพัก</button>
+                        <button id="view-qc-summary-btn" class="view-toggle-btn px-4 py-1.5 rounded-md">สรุป QC</button>
+                        <button id="view-common-btn" class="view-toggle-btn px-4 py-1.5 rounded-md">ส่วนกลาง</button>
                     </div>
                     
-                    <div class="mb-4">
-                        <label for="progress-input" class="block text-sm font-medium text-gray-700">เปอร์เซ็นต์ความคืบหน้า (%):</label>
-                        <input type="number" id="progress-input" min="0" max="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
+                    <div id="tiling-view-toggle" class="flex items-center gap-3 hidden ml-4 border-l border-slate-200 pl-4">
+                         <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">รูปแบบ</span>
+                        <div class="bg-slate-100 p-1 rounded-lg text-slate-600 text-sm font-medium flex">
+                            <button id="view-tiling-summary-btn" class="view-toggle-btn px-4 py-1.5 rounded-md active">สรุป</button>
+                            <button id="view-tiling-detailed-btn" class="view-toggle-btn px-4 py-1.5 rounded-md">ละเอียด</button>
+                        </div>
                     </div>
                 </div>
                 
-                <div id="modal-multi-progress-view" class="hidden">
+                <!-- Action Buttons -->
+                <div id="action-buttons-container" class="flex flex-wrap justify-start xl:justify-end items-center gap-2 w-full xl:w-auto">
+                    <button id="captureBtn" class="action-btn px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm font-medium inline-flex items-center gap-2 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        แคปเจอร์
+                    </button>
+                    <button id="openReportModalBtn" class="action-btn px-4 py-2 bg-white border border-indigo-200 text-indigo-700 rounded-lg shadow-sm hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm font-medium inline-flex items-center gap-2 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                        ทำรายงาน
+                    </button>
+                    <button id="openCommonAreaReportModalBtn" class="action-btn px-4 py-2 bg-white border border-indigo-200 text-indigo-700 rounded-lg shadow-sm hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm font-medium inline-flex items-center gap-2 transition-all hidden">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+                        Infographic
+                    </button>
+                     <input type="file" id="import-file" class="hidden" accept=".json">
+                     <label for="import-file" class="action-btn custom-file-button px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg shadow-sm hover:bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 text-sm font-medium inline-flex items-center gap-2 transition-all">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                         นำเข้า
+                     </label>
+                    <button id="exportDataBtn" class="action-btn px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg shadow-sm hover:bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 text-sm font-medium inline-flex items-center gap-2 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        ส่งออก
+                    </button>
+                    <button id="clearDataBtn" class="action-btn px-4 py-2 bg-white border border-rose-200 text-rose-600 rounded-lg shadow-sm hover:bg-rose-50 hover:border-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 text-sm font-medium inline-flex items-center gap-2 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        รีเซ็ต
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bottom Row: Task Selection -->
+            <div id="task-selection-container" class="w-full border-t border-slate-100 pt-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-3">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">เลือกงาน</span>
+                    <div class="relative w-full sm:w-auto">
+                        <input type="text" id="task-search-input" class="w-full sm:w-64 pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50 focus:bg-white" placeholder="ค้นหางาน...">
+                        <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                </div>
+                <div class="overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+                    <div id="task-category-buttons" class="flex flex-col gap-3 min-w-max">
+                        <!-- JS Generated Content -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Update Modal -->
+        <div id="updateModal" class="modal fixed inset-0 w-full h-full items-center justify-center z-50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 w-11/12 md:w-full max-w-md transform transition-all">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h2 id="modal-title" class="text-2xl font-bold text-slate-800 tracking-tight">อัพเดทสถานะ</h2>
+                        <p id="modal-description" class="text-sm font-medium text-indigo-600 mt-1 bg-indigo-50 inline-block px-3 py-1 rounded-full"></p>
+                    </div>
+                    <button id="closeModalIconBtn" class="text-slate-400 hover:text-slate-600 transition-colors bg-slate-100 hover:bg-slate-200 rounded-full p-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                <div id="modal-progress-view" class="space-y-5">
+                    <div id="modal-task-select-container">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">เลือกงานที่ต้องการอัพเดท</label>
+                        <div id="modal-task-buttons" class="flex flex-wrap gap-2">
+                            <!-- JS Generated Buttons -->
+                        </div>
+                        <input type="hidden" id="modal-task-select" value="0">
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label for="progress-input" class="block text-sm font-semibold text-slate-700">ความคืบหน้า</label>
+                            <span class="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded-md">0 - 100%</span>
+                        </div>
+                        <div class="relative flex items-center">
+                            <input type="number" id="progress-input" min="0" max="100" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-slate-800 font-bold text-lg focus:border-indigo-500 focus:ring-indigo-500 p-3.5 pr-12 transition-colors text-center">
+                            <span class="absolute right-4 text-slate-400 font-bold">%</span>
+                        </div>
+                        
+                        <!-- Quick Progress Buttons -->
+                        <div class="grid grid-cols-4 gap-2 mt-3">
+                            <button type="button" class="quick-progress-btn py-2 bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-700 rounded-lg text-sm font-semibold transition-colors" data-value="0">0%</button>
+                            <button type="button" class="quick-progress-btn py-2 bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-700 rounded-lg text-sm font-semibold transition-colors" data-value="25">25%</button>
+                            <button type="button" class="quick-progress-btn py-2 bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-700 rounded-lg text-sm font-semibold transition-colors" data-value="50">50%</button>
+                            <button type="button" class="quick-progress-btn py-2 bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 rounded-lg text-sm font-semibold transition-colors" data-value="100">100%</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="modal-multi-progress-view" class="hidden space-y-4">
                      <!-- JS Generated Content -->
                 </div>
 
-                 <div id="modal-inspection-view" class="hidden">
-                     <div class="mb-4">
-                         <label class="flex items-center">
-                             <input type="checkbox" id="in-inspection-checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                             <span class="ml-2 text-sm text-gray-700">อยู่ระหว่างการตรวจสอบ</span>
+                 <div id="modal-inspection-view" class="hidden space-y-5">
+                     <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                         <label class="flex items-center cursor-pointer">
+                             <div class="relative flex items-center justify-center">
+                                 <input type="checkbox" id="in-inspection-checkbox" class="peer sr-only">
+                                 <div class="w-6 h-6 bg-white border-2 border-slate-300 rounded-md peer-checked:bg-indigo-600 peer-checked:border-indigo-600 transition-colors flex items-center justify-center">
+                                     <svg class="w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                 </div>
+                             </div>
+                             <span class="ml-3 text-sm font-bold text-indigo-900">อยู่ระหว่างการตรวจสอบ</span>
                          </label>
                      </div>
-                     <div class="mb-4">
-                             <label for="inspection-stage-select" class="block text-sm font-medium text-gray-700">ขั้นตอน:</label>
-                             <select id="inspection-stage-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
-                                   <option value="cm">CM</option>
-                                   <option value="qc">QC</option>
-                                   <option value="qc-cm">QC-CM</option>
-                             </select>
+                     
+                     <div class="grid grid-cols-2 gap-4">
+                         <div>
+                                 <label for="inspection-stage-select" class="block text-sm font-semibold text-slate-700 mb-2">ขั้นตอน</label>
+                                 <div class="relative">
+                                     <select id="inspection-stage-select" class="appearance-none block w-full rounded-xl border-slate-200 bg-slate-50 text-slate-700 font-medium focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 pr-10 transition-colors cursor-pointer hover:bg-slate-100">
+                                           <option value="cm">CM</option>
+                                           <option value="qc">QC</option>
+                                           <option value="qc-cm">QC-CM</option>
+                                     </select>
+                                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                     </div>
+                                 </div>
+                         </div>
+                         <div>
+                                 <label for="score-input" class="block text-sm font-semibold text-slate-700 mb-2">คะแนน</label>
+                                 <input type="number" step="0.01" id="score-input" min="0" max="100" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-slate-800 font-bold focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 transition-colors text-center" placeholder="0-100">
+                         </div>
                      </div>
-                     <div class="mb-4">
-                             <label for="score-input" class="block text-sm font-medium text-gray-700">คะแนน (0-100):</label>
-                             <input type="number" step="0.01" id="score-input" min="0" max="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
-                     </div>
-                     <div class="mb-4">
-                             <label class="flex items-center">
-                                 <input type="checkbox" id="major-defect-checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                                 <span class="ml-2 text-sm text-gray-700">พบ Major Defect</span>
-                             </label>
+                     
+                     <div class="bg-rose-50 p-4 rounded-xl border border-rose-100">
+                         <label class="flex items-center cursor-pointer">
+                             <div class="relative flex items-center justify-center">
+                                 <input type="checkbox" id="major-defect-checkbox" class="peer sr-only">
+                                 <div class="w-6 h-6 bg-white border-2 border-slate-300 rounded-md peer-checked:bg-rose-600 peer-checked:border-rose-600 transition-colors flex items-center justify-center">
+                                     <svg class="w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                 </div>
+                             </div>
+                             <span class="ml-3 text-sm font-bold text-rose-900">พบ Major Defect</span>
+                         </label>
                      </div>
                  </div>
 
-                <div class="flex justify-end gap-4">
-                    <button id="closeModalBtn" class="px-4 py-2 bg-slate-300 text-slate-800 rounded-md hover:bg-slate-400">ยกเลิก</button>
-                    <button id="saveProgressBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 w-24">บันทึก</button>
+                <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+                    <button id="closeModalBtn" class="px-5 py-2.5 bg-white border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 hover:text-slate-800 transition-colors">ยกเลิก</button>
+                    <button id="saveProgressBtn" class="px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-md shadow-indigo-200 transition-all transform hover:-translate-y-0.5">บันทึกข้อมูล</button>
                 </div>
             </div>
         </div>
@@ -759,19 +888,19 @@
             };
 
             const taskDefinitions = {
-                skimAndPaint: { name: 'งานสกิม/ทาสี', reportName: 'งานสกิมและทาสีห้องพัก', reportEmoji: '🎨', title: 'STATUS งานสกิม / ทาสี', type: 'progress', tasks: [ { name: 'สกิม', color: 'bg-blue-500', textColor: 'text-white' }, { name: 'ทาสี', color: 'bg-orange-400', textColor: 'text-white' } ] },
-                topping: { name: 'งานเท TOPPING', reportName: 'งานเทปรับระดับพื้นห้องพัก', reportEmoji: '🛠️', title: 'STATUS งานเท TOPPING', type: 'progress', tasks: [ { name: 'จับปุ่ม/ขังน้ำ', color: 'bg-violet-500', textColor: 'text-white' }, { name: 'เท Topping', color: 'bg-teal-500', textColor: 'text-white' } ] },
-                ceiling: { name: 'งานติดตั้งฝ้า', reportName: 'งานติดตั้งฝ้าห้องพัก-ห้องน้ำ', reportEmoji: '🪜', title: 'STATUS งานติดตั้งฝ้า', type: 'progress', tasks: [ { name: 'ขึ้นโครง', color: 'bg-purple-500', textColor: 'text-white' }, { name: 'ติดแผ่น', color: 'bg-lime-500', textColor: 'text-white' } ] },
-                texcaWall: { name: 'งานผนัง TEXCA', reportName: 'งานผนัง TEXCA', reportEmoji: '🧱', title: 'STATUS งานผนัง TEXCA WALL', type: 'progress', tasks: [ { name: 'ตีไลน์', color: 'bg-gray-400', textColor: 'text-white' }, { name: 'เขิบ', color: 'bg-stone-500', textColor: 'text-white' }, { name: 'TEXCA', color: 'bg-cyan-500', textColor: 'text-white' } ] },
-                furniture: { name: 'งานติดตั้งเฟอร์นิเจอร์', reportName: 'งานติดตั้งเฟอร์นิเจอร์', reportEmoji: '🛋️', title: 'STATUS งานติดตั้งเฟอร์นิเจอร์', type: 'progress', tasks: [ { name: 'ติดตั้งชุดครัว', color: 'bg-orange-500', textColor: 'text-white' }, { name: 'ติดตั้งเฟอร์นิเจอร์', color: 'bg-lime-500', textColor: 'text-white' }, ] },
-                laminate: { name: 'งานปูพื้นไม้ลามิเนต', reportName: 'งานปูพื้นไม้ลามิเนต', reportEmoji: '🌲', title: 'STATUS งานปูพื้นไม้ลามิเนต', type: 'progress', tasks: [ { name: 'ตรวจรับพื้นที่', color: 'bg-yellow-500', textColor: 'text-black' }, { name: 'ปูพื้นไม้', color: 'bg-amber-800', textColor: 'text-white' }, ] },
+                skimAndPaint: { name: 'งานสกิม/ทาสี', reportName: 'งานสกิมและทาสีห้องพัก', reportEmoji: '🎨', title: 'STATUS งานสกิม / ทาสี', type: 'progress', tasks: [ { name: 'สกิม', color: 'bg-stone-400', textColor: 'text-white' }, { name: 'ทาสี', color: 'bg-sky-500', textColor: 'text-white' } ] },
+                topping: { name: 'งานเท TOPPING', reportName: 'งานเทปรับระดับพื้นห้องพัก', reportEmoji: '🛠️', title: 'STATUS งานเท TOPPING', type: 'progress', tasks: [ { name: 'จับปุ่ม/ขังน้ำ', color: 'bg-orange-400', textColor: 'text-white' }, { name: 'เท Topping', color: 'bg-stone-500', textColor: 'text-white' } ] },
+                ceiling: { name: 'งานติดตั้งฝ้า', reportName: 'งานติดตั้งฝ้าห้องพัก-ห้องน้ำ', reportEmoji: '🪜', title: 'STATUS งานติดตั้งฝ้า', type: 'progress', tasks: [ { name: 'ขึ้นโครง', color: 'bg-slate-500', textColor: 'text-white' }, { name: 'ติดแผ่น', color: 'bg-yellow-400', textColor: 'text-black' } ] },
+                texcaWall: { name: 'งานผนัง TEXCA', reportName: 'งานผนัง TEXCA', reportEmoji: '🧱', title: 'STATUS งานผนัง TEXCA WALL', type: 'progress', tasks: [ { name: 'ตีไลน์', color: 'bg-red-500', textColor: 'text-white' }, { name: 'เขิบ', color: 'bg-stone-400', textColor: 'text-white' }, { name: 'TEXCA', color: 'bg-orange-300', textColor: 'text-black' } ] },
                 waterproofing: { name: 'งานกันซึม', reportName: 'งานกันซึม', reportEmoji: '🛡️', title: 'STATUS งานกันซึม', type: 'multi-progress', tasks: [ { name: 'ห้องน้ำ', key: 'bathroom', shortName: 'น้ำ', color: 'bg-indigo-500', textColor: 'text-white' }, { name: 'ระเบียง', key: 'balcony', shortName: 'รบ.', color: 'bg-cyan-500', textColor: 'text-white' } ] },
                 tiling: { name: 'งานปูกระเบื้อง', reportName: 'งานปูกระเบื้อง', reportEmoji: '🟧', title: 'STATUS งานปูกระเบื้อง', type: 'multi-progress', hasDetailedView: true, tasks: [ { name: 'ห้องน้ำ', key: 'bathroom', shortName: 'น้ำ', color: 'bg-teal-500', textColor: 'text-white' }, { name: 'ระเบียง', key: 'balcony', shortName: 'รบ.', color: 'bg-lime-600', textColor: 'text-white' }, { name: 'ครัว', key: 'kitchen', shortName: 'ครัว', color: 'bg-rose-500', textColor: 'text-white' } ] },
-                door: { name: 'งานติดตั้งประตูไม้', reportName: 'งานติดตั้งประตูไม้', reportEmoji: '🚪', title: 'STATUS งานติดตั้งประตูไม้', type: 'multi-progress', tasks: [ { name: 'ประตูหน้า', key: 'front', shortName: 'หน้า', color: 'bg-amber-600', textColor: 'text-white' }, { name: 'ประตูห้องน้ำ', key: 'bathroom', shortName: 'น้ำ', color: 'bg-blue-400', textColor: 'text-white' }, { name: 'อุปกรณ์ประตู', key: 'hardware', shortName: 'อปก.', color: 'bg-green-500', textColor: 'text-white' } ] },
-                aluminum: { name: 'งานติดตั้งอลูมิเนียม', reportName: 'งานติดตั้งอลูมิเนียม', reportEmoji: '🪟', title: 'STATUS งานติดตั้งอลูมิเนียม', type: 'multi-progress', hasDetailedView: true, tasks: [ { name: 'บานกั้นห้อง', key: 'partition', shortName: 'กั้น', color: 'bg-sky-400', textColor: 'text-white' }, { name: 'บานออกระเบียง', key: 'balcony', shortName: 'รบ.', color: 'bg-blue-400', textColor: 'text-white' }, { name: 'บานหน้าต่าง', key: 'window', shortName: 'นต.', color: 'bg-teal-400', textColor: 'text-white' } ] },
-                showerScreen: { name: 'งาน SHOWER SCREEN', reportName: 'งาน SHOWER SCREEN', reportEmoji: '🚿', title: 'STATUS งาน SHOWER SCREEN', type: 'progress', tasks: [ { name: 'ติดตั้ง', color: 'bg-sky-500', textColor: 'text-white' }, { name: 'เก็บงาน', color: 'bg-emerald-500', textColor: 'text-white' } ] },
-                wetWork: { name: 'WET WORK', reportName: 'WET WORK', reportEmoji: '💧', title: 'STATUS งาน WET WORK', type: 'inspection', tasks: [ { name: 'CM WW', color: 'bg-orange-400', textColor: 'text-white' }, { name: 'QC WW', color: 'bg-yellow-400', textColor: 'text-black' } ] },
-                endProduct: { name: 'END PRODUCT', reportName: 'END PRODUCT', reportEmoji: '✅', title: 'STATUS งาน END PRODUCT', type: 'inspection', tasks: [ { name: 'CM End', color: 'bg-rose-300', textColor: 'text-black' }, { name: 'QC End', color: 'bg-emerald-400', textColor: 'text-black' }, ] },
+                aluminum: { name: 'งานติดตั้งอลูมิเนียม', reportName: 'งานติดตั้งอลูมิเนียม', reportEmoji: '🪟', title: 'STATUS งานติดตั้งอลูมิเนียม', type: 'multi-progress', hasDetailedView: true, tasks: [ { name: 'บานกั้นห้อง', key: 'partition', shortName: 'กั้น', color: 'bg-slate-400', textColor: 'text-white' }, { name: 'บานออกระเบียง', key: 'balcony', shortName: 'รบ.', color: 'bg-blue-400', textColor: 'text-white' }, { name: 'บานหน้าต่าง', key: 'window', shortName: 'นต.', color: 'bg-sky-300', textColor: 'text-black' } ] },
+                wetWork: { name: 'คะแนน WET WORK', reportName: 'WET WORK', reportEmoji: '💧', title: 'STATUS งาน WET WORK', type: 'inspection', tasks: [ { name: 'CM WW', color: 'bg-orange-400', textColor: 'text-white' }, { name: 'QC WW', color: 'bg-yellow-400', textColor: 'text-black' } ] },
+                furniture: { name: 'งานติดตั้งเฟอร์นิเจอร์', reportName: 'งานติดตั้งเฟอร์นิเจอร์', reportEmoji: '🛋️', title: 'STATUS งานติดตั้งเฟอร์นิเจอร์', type: 'progress', tasks: [ { name: 'ติดตั้งชุดครัว', color: 'bg-amber-500', textColor: 'text-white' }, { name: 'ติดตั้งเฟอร์นิเจอร์', color: 'bg-amber-700', textColor: 'text-white' }, ] },
+                laminate: { name: 'งานปูพื้นไม้ลามิเนต', reportName: 'งานปูพื้นไม้ลามิเนต', reportEmoji: '🌲', title: 'STATUS งานปูพื้นไม้ลามิเนต', type: 'progress', tasks: [ { name: 'ตรวจรับพื้นที่', color: 'bg-yellow-400', textColor: 'text-black' }, { name: 'ปูพื้นไม้', color: 'bg-amber-800', textColor: 'text-white' }, ] },
+                door: { name: 'งานติดตั้งประตูไม้', reportName: 'งานติดตั้งประตูไม้', reportEmoji: '🚪', title: 'STATUS งานติดตั้งประตูไม้', type: 'multi-progress', tasks: [ { name: 'ประตูหน้า', key: 'front', shortName: 'หน้า', color: 'bg-amber-600', textColor: 'text-white' }, { name: 'ประตูห้องน้ำ', key: 'bathroom', shortName: 'น้ำ', color: 'bg-blue-400', textColor: 'text-white' }, { name: 'อุปกรณ์ประตู', key: 'hardware', shortName: 'อปก.', color: 'bg-slate-500', textColor: 'text-white' } ] },
+                showerScreen: { name: 'งาน SHOWER SCREEN', reportName: 'งาน SHOWER SCREEN', reportEmoji: '🚿', title: 'STATUS งาน SHOWER SCREEN', type: 'progress', tasks: [ { name: 'ติดตั้ง', color: 'bg-sky-500', textColor: 'text-white' }, { name: 'เก็บงาน', color: 'bg-teal-400', textColor: 'text-white' } ] },
+                endProduct: { name: 'คะแนน END PRODUCT', reportName: 'END PRODUCT', reportEmoji: '✅', title: 'STATUS งาน END PRODUCT', type: 'inspection', tasks: [ { name: 'CM End', color: 'bg-rose-300', textColor: 'text-black' }, { name: 'QC End', color: 'bg-emerald-400', textColor: 'text-black' }, ] },
             };
 
             const commonAreaDefinitions = {
@@ -1135,16 +1264,16 @@
 
                 const thead = document.createElement('thead');
                 let headerHTML = `
-                    <tr class="bg-slate-200">
-                        <th class="border p-2" rowspan="2"><span>ชั้น</span></th>
-                        <th class="border p-2" rowspan="2"><span>รายการ</span></th>
-                        <th class="border p-2" colspan="${CONFIG.ROOMS_PER_FLOOR}"><span>ROOM No.</span></th>
+                    <tr>
+                        <th class="border p-2 bg-slate-200" rowspan="2"><span>ชั้น</span></th>
+                        <th class="border p-2 bg-slate-200" rowspan="2"><span>รายการ</span></th>
+                        <th class="border p-2 bg-slate-200" colspan="${CONFIG.ROOMS_PER_FLOOR}"><span>ROOM No.</span></th>
                         <th class="border-y border-l bg-white separator-cell" rowspan="2"></th>
                         <th class="border p-2 bg-slate-200" colspan="3"><span>สรุปผลตรวจ</span></th>
                     </tr>
-                    <tr class="bg-slate-50">`;
+                    <tr>`;
                 for (let i = 1; i <= CONFIG.ROOMS_PER_FLOOR; i++) {
-                    headerHTML += `<th class="border p-1 md:p-2 font-normal"><span>${i}</span></th>`;
+                    headerHTML += `<th class="border p-1 md:p-2 font-normal bg-slate-50"><span>${i}</span></th>`;
                 }
                 headerHTML += `
                         <th class="border p-2 bg-slate-100 font-semibold"><span>ส่งแล้ว</span></th>
@@ -1190,18 +1319,36 @@
                     return { styleClasses, cellText };
                 };
 
-                CONFIG.FLOORS.forEach(floor => {
+                CONFIG.FLOORS.forEach((floor, index) => {
                     const roomsOnThisFloor = (floor === 2) ? CONFIG.ROOMS_ON_FLOOR_2 : CONFIG.ROOMS_PER_FLOOR;
                     
                     const wetWorkRow = document.createElement('tr');
                     const endProductRow = document.createElement('tr');
                     
+                    // Add separation between floors
+                    const floorSeparatorClass = index === 0 ? '' : 'border-t-4 border-slate-300 floor-separator';
+                    wetWorkRow.className = `${floorSeparatorClass} bg-slate-50/30 hover:bg-slate-50 transition-colors`;
+                    endProductRow.className = `bg-slate-50/30 hover:bg-slate-50 transition-colors border-b border-slate-200`;
+
+                    // Floor Cell (Sticky)
                     wetWorkRow.innerHTML = `
-                        <td class="border p-2 font-bold bg-slate-100 align-middle" rowspan="2"><span>${floor}</span></td>
-                        <td class="border p-1 font-semibold bg-slate-50 text-slate-600 text-[11px] align-middle">Wet Work</td>
+                        <td class="border-r-2 border-slate-300 p-2 font-black text-slate-700 align-middle text-center bg-white sticky left-0 z-20 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]" rowspan="2" style="min-width: 50px;">
+                            <span class="text-lg">${floor}</span>
+                        </td>
+                        <td class="border-r border-slate-200 p-2 font-bold text-blue-700 bg-blue-50/80 text-xs align-middle sticky left-[50px] z-20 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)] whitespace-nowrap" style="min-width: 100px;">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                                Wet Work
+                            </div>
+                        </td>
                     `;
                     endProductRow.innerHTML = `
-                        <td class="border p-1 font-semibold bg-slate-50 text-slate-600 text-[11px] align-middle">End Product</td>
+                        <td class="border-r border-slate-200 p-2 font-bold text-emerald-700 bg-emerald-50/80 text-xs align-middle sticky left-[50px] z-20 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)] whitespace-nowrap" style="min-width: 100px;">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                End Product
+                            </div>
+                        </td>
                     `;
 
                     let floorTotals = {
@@ -1211,8 +1358,8 @@
 
                     for (let room = 1; room <= CONFIG.ROOMS_PER_FLOOR; room++) {
                         if (floor === 2 && room > CONFIG.ROOMS_ON_FLOOR_2) {
-                            wetWorkRow.innerHTML += `<td class="border p-2 bg-slate-200"></td>`;
-                            endProductRow.innerHTML += `<td class="border p-2 bg-slate-200"></td>`;
+                            wetWorkRow.innerHTML += `<td class="border p-2 bg-slate-100/50"></td>`;
+                            endProductRow.innerHTML += `<td class="border p-2 bg-slate-100/50"></td>`;
                             continue;
                         }
 
@@ -1220,48 +1367,52 @@
                         const wwData = projectData.wetWork?.[floor]?.[room] || {};
                         const { styleClasses: wwStyle, cellText: wwText } = renderCellContent(wwData);
                         const wwCell = document.createElement('td');
-                        wwCell.className = `border p-2 table-cell ${wwStyle}`;
-                        wwCell.innerHTML = `<span class="percentage-text">${wwText}</span>`;
+                        wwCell.className = `border p-2 table-cell ${wwStyle} transition-opacity hover:opacity-80 cursor-default`;
+                        wwCell.innerHTML = `<span class="percentage-text font-medium">${wwText}</span>`;
                         wwCell.dataset.floor = floor;
                         wwCell.dataset.room = room;
-                        wwCell.dataset.qcType = 'wetWork';
                         wetWorkRow.appendChild(wwCell);
+                        
+                        // Count Wet Work stats
+                        if (wwData.inInspection || wwData.qcScore > 0 || wwData.cmScore > 0) {
+                            floorTotals.wetWork.submitted++;
+                            if ((wwData.qcScore || wwData.cmScore) >= 85) floorTotals.wetWork.passed++;
+                            else floorTotals.wetWork.failed++;
+                        }
 
                         // End Product Cell
                         const epData = projectData.endProduct?.[floor]?.[room] || {};
                         const { styleClasses: epStyle, cellText: epText } = renderCellContent(epData);
                         const epCell = document.createElement('td');
-                        epCell.className = `border p-2 table-cell ${epStyle}`;
-                        epCell.innerHTML = `<span class="percentage-text">${epText}</span>`;
+                        epCell.className = `border p-2 table-cell ${epStyle} transition-opacity hover:opacity-80 cursor-default`;
+                        epCell.innerHTML = `<span class="percentage-text font-medium">${epText}</span>`;
                         epCell.dataset.floor = floor;
                         epCell.dataset.room = room;
-                        epCell.dataset.qcType = 'endProduct';
                         endProductRow.appendChild(epCell);
 
-                        // Calculate floor totals
-                        const wwScore = (wwData.qcScore || 0) > 0 ? wwData.qcScore : (wwData.cmScore || 0);
-                        if (wwScore > 0) {
-                            floorTotals.wetWork.submitted++;
-                            if (wwScore >= 85) floorTotals.wetWork.passed++; else floorTotals.wetWork.failed++;
-                        }
-                        const epScore = (epData.qcScore || 0) > 0 ? epData.qcScore : (epData.cmScore || 0);
-                        if (epScore > 0) {
+                        // Count End Product stats
+                        if (epData.inInspection || epData.qcScore > 0 || epData.cmScore > 0) {
                             floorTotals.endProduct.submitted++;
-                            if (epScore >= 85) floorTotals.endProduct.passed++; else floorTotals.endProduct.failed++;
+                            if ((epData.qcScore || epData.cmScore) >= 85) floorTotals.endProduct.passed++;
+                            else floorTotals.endProduct.failed++;
                         }
                     }
 
-                    // Append Separator and Summary Cells
-                    wetWorkRow.innerHTML += `<td class="border-y border-l bg-white separator-cell" rowspan="2"></td>`;
+                    // Add Separator and Summary Columns
+                    wetWorkRow.innerHTML += `<td class="border-l-2 border-slate-300 bg-white separator-cell" rowspan="2"></td>`;
+                    
+                    // Summary for Wet Work
                     wetWorkRow.innerHTML += `
-                        <td class="border p-2 summary-cell"><span>${floorTotals.wetWork.submitted}</span></td>
-                        <td class="border p-2 summary-cell bg-teal-50"><span>${floorTotals.wetWork.passed}</span></td>
-                        <td class="border p-2 summary-cell bg-rose-50"><span>${floorTotals.wetWork.failed}</span></td>
+                        <td class="border p-2 bg-slate-50 font-semibold text-slate-700">${floorTotals.wetWork.submitted}</td>
+                        <td class="border p-2 bg-teal-50 font-semibold text-teal-700">${floorTotals.wetWork.passed}</td>
+                        <td class="border p-2 bg-rose-50 font-semibold text-rose-700">${floorTotals.wetWork.failed}</td>
                     `;
+
+                    // Summary for End Product
                     endProductRow.innerHTML += `
-                        <td class="border p-2 summary-cell"><span>${floorTotals.endProduct.submitted}</span></td>
-                        <td class="border p-2 summary-cell bg-teal-50"><span>${floorTotals.endProduct.passed}</span></td>
-                        <td class="border p-2 summary-cell bg-rose-50"><span>${floorTotals.endProduct.failed}</span></td>
+                        <td class="border p-2 bg-slate-50 font-semibold text-slate-700">${floorTotals.endProduct.submitted}</td>
+                        <td class="border p-2 bg-teal-50 font-semibold text-teal-700">${floorTotals.endProduct.passed}</td>
+                        <td class="border p-2 bg-rose-50 font-semibold text-rose-700">${floorTotals.endProduct.failed}</td>
                     `;
 
                     tbody.appendChild(wetWorkRow);
@@ -1313,32 +1464,32 @@
                 let headerHTML = '';
 
                 if (isDetailedView) {
-                    headerHTML = `<tr class="bg-slate-200">
-                        <th class="border p-2" rowspan="2"><span>ชั้น</span></th>
-                        <th class="border p-2" rowspan="2" style="min-width: 100px;"><span>รายการ</span></th>
-                        <th class="border p-2" colspan="${CONFIG.ROOMS_PER_FLOOR}"><span>ROOM No.</span></th>
+                    headerHTML = `<tr>
+                        <th class="border p-2 bg-slate-200" rowspan="2"><span>ชั้น</span></th>
+                        <th class="border p-2 bg-slate-200" rowspan="2" style="min-width: 100px;"><span>รายการ</span></th>
+                        <th class="border p-2 bg-slate-200" colspan="${CONFIG.ROOMS_PER_FLOOR}"><span>ROOM No.</span></th>
                         <th class="border-y border-l bg-white separator-cell" rowspan="2"></th>
                         <th class="border p-2 bg-slate-200" rowspan="2"><span>จำนวน</span></th>
                         <th class="border p-2 bg-teal-200" rowspan="2"><span>เสร็จ</span></th>
                         <th class="border p-2 bg-rose-200" rowspan="2"><span>คงเหลือ</span></th>
                     </tr>
-                    <tr class="bg-slate-50">`;
+                    <tr>`;
                     for (let i = 1; i <= CONFIG.ROOMS_PER_FLOOR; i++) {
-                        headerHTML += `<th class="border p-1 md:p-2 font-normal"><span>${i}</span></th>`;
+                        headerHTML += `<th class="border p-1 md:p-2 font-normal bg-slate-50"><span>${i}</span></th>`;
                     }
                     headerHTML += '</tr>';
                 } else {
-                    headerHTML = `<tr class="bg-slate-200">
-                        <th class="border p-2" rowspan="2"><span>ชั้น</span></th>
-                        <th class="border p-2" colspan="${CONFIG.ROOMS_PER_FLOOR}"><span>ROOM No.</span></th>
+                    headerHTML = `<tr>
+                        <th class="border p-2 bg-slate-200" rowspan="2"><span>ชั้น</span></th>
+                        <th class="border p-2 bg-slate-200" colspan="${CONFIG.ROOMS_PER_FLOOR}"><span>ROOM No.</span></th>
                         <th class="border-y border-l bg-white separator-cell" rowspan="2"></th>
                         <th class="border p-2 bg-slate-200" colspan="${isInspection ? 3 : categoryTasks.length}"><span>${isInspection ? 'สรุปผลตรวจ' : 'จำนวน'}</span></th>
                         <th class="border p-2 bg-teal-200" rowspan="2"><span>ผ่าน/เสร็จ</span></th>
                         <th class="border p-2 bg-rose-200" rowspan="2"><span>คงเหลือ</span></th>
                     </tr>
-                    <tr class="bg-slate-50">`;
+                    <tr>`;
                     for (let i = 1; i <= CONFIG.ROOMS_PER_FLOOR; i++) {
-                        headerHTML += `<th class="border p-1 md:p-2 font-normal"><span>${i}</span></th>`;
+                        headerHTML += `<th class="border p-1 md:p-2 font-normal bg-slate-50"><span>${i}</span></th>`;
                     }
                     if (isInspection) {
                         headerHTML += `<th class="border p-2 bg-slate-100 font-semibold"><span>ส่งแล้ว</span></th>`;
@@ -1668,16 +1819,98 @@
                 }
             }
 
-            function setupCategoryDropdown() {
-                const dropdown = document.getElementById('task-category');
-                dropdown.innerHTML = '';
-                Object.keys(taskDefinitions).forEach(catKey => {
-                    const option = document.createElement('option');
-                    option.value = catKey;
-                    option.textContent = taskDefinitions[catKey].name;
-                    if (catKey === currentCategory) option.selected = true;
-                    dropdown.appendChild(option);
-                });
+            function setupCategoryButtons() {
+                const container = document.getElementById('task-category-buttons');
+                container.innerHTML = '';
+                
+                const getIconForTask = (catKey, isSelected) => {
+                    const iconColor = isSelected ? 'text-white' : (
+                        {
+                            skimAndPaint: 'text-blue-500',
+                            topping: 'text-stone-500',
+                            ceiling: 'text-sky-500',
+                            texcaWall: 'text-orange-500',
+                            waterproofing: 'text-cyan-500',
+                            tiling: 'text-teal-500',
+                            aluminum: 'text-slate-500',
+                            furniture: 'text-amber-600',
+                            laminate: 'text-yellow-600',
+                            door: 'text-amber-800',
+                            showerScreen: 'text-blue-400',
+                            wetWork: 'text-indigo-500',
+                            endProduct: 'text-emerald-500'
+                        }[catKey] || 'text-slate-400'
+                    );
+
+                    const icons = {
+                        skimAndPaint: `<svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>`,
+                        topping: `<svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11L12 15l-7-4M19 15l-7 4-7-4M19 7l-7 4-7-4 7-4 7 4z"></path></svg>`,
+                        ceiling: `<svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>`,
+                        texcaWall: `<svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m5-8h1m-1 4h1m-1 4h1M5 21v-3a2 2 0 012-2h10a2 2 0 012 2v3"></path></svg>`,
+                        waterproofing: `<svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"></path></svg>`,
+                        tiling: `<svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>`,
+                        aluminum: `<svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke-width="2"></rect><line x1="3" y1="9" x2="21" y2="9" stroke-width="2"></line><line x1="9" y1="21" x2="9" y2="9" stroke-width="2"></line></svg>`,
+                        furniture: `<svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>`,
+                        laminate: `<svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>`,
+                        door: `<svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2" ry="2" stroke-width="2"></rect><circle cx="15" cy="12" r="1" stroke-width="2"></circle></svg>`,
+                        showerScreen: `<svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"></path></svg>`,
+                        wetWork: `<svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+                        endProduct: `<svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`
+                    };
+                    return icons[catKey] || `<svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>`;
+                };
+
+                const wetWorkKeys = ['skimAndPaint', 'topping', 'ceiling', 'texcaWall', 'waterproofing', 'tiling', 'aluminum', 'wetWork'];
+                const endProductKeys = ['furniture', 'laminate', 'door', 'showerScreen', 'endProduct'];
+
+                const createGroup = (title, keys, colorClass) => {
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = 'flex items-center gap-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-200 w-max';
+                    
+                    const label = document.createElement('div');
+                    label.className = `px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-xl ${colorClass}`;
+                    label.textContent = title;
+                    groupDiv.appendChild(label);
+                    
+                    const btnContainer = document.createElement('div');
+                    btnContainer.className = 'flex gap-1.5';
+                    
+                    keys.forEach(catKey => {
+                        const btn = document.createElement('button');
+                        const isSelected = catKey === currentCategory;
+                        
+                        btn.className = `flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all whitespace-nowrap ${
+                            isSelected 
+                            ? 'bg-indigo-600 text-white shadow-md ring-2 ring-indigo-600 ring-offset-2 transform scale-105 z-10' 
+                            : 'bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-slate-200'
+                        }`;
+                        
+                        btn.innerHTML = `
+                            ${getIconForTask(catKey, isSelected)}
+                            ${taskDefinitions[catKey].name}
+                        `;
+                        
+                        btn.onclick = () => {
+                            currentCategory = catKey;
+                            currentDetailedView = 'summary';
+                            setupCategoryButtons(); // Re-render to update active state
+                            renderTable();
+                        };
+                        
+                        btnContainer.appendChild(btn);
+                    });
+                    
+                    groupDiv.appendChild(btnContainer);
+                    return groupDiv;
+                };
+
+                container.appendChild(createGroup('WETWORK', wetWorkKeys, 'bg-blue-100 text-blue-700'));
+                container.appendChild(createGroup('END PRODUCT', endProductKeys, 'bg-emerald-100 text-emerald-700'));
+
+                const searchInput = document.getElementById('task-search-input');
+                if (searchInput && searchInput.value) {
+                    filterTasks(searchInput.value);
+                }
             }
             
             function updateUI() {
@@ -1685,7 +1918,7 @@
                 const isQCSummaryView = currentView === 'qcSummary';
                 const categoryDef = taskDefinitions[currentCategory];
 
-                document.getElementById('dropdown-container').style.display = isCommonView || isQCSummaryView ? 'none' : 'flex';
+                document.getElementById('task-selection-container').style.display = isCommonView || isQCSummaryView ? 'none' : 'block';
                 document.getElementById('legend').style.display = isCommonView ? 'none' : 'flex';
                 document.getElementById('openReportModalBtn').style.display = isCommonView ? 'none' : 'inline-flex';
                 document.getElementById('openCommonAreaReportModalBtn').style.display = isCommonView ? 'inline-flex' : 'none';
@@ -1720,40 +1953,89 @@
             
             function updateLegend() {
                 const legend = document.getElementById('legend');
-                legend.innerHTML = '<strong>คำอธิบาย:</strong>';
                 
+                // Single line layout
+                legend.className = 'mt-4 p-3 bg-white border border-slate-200 shadow-sm rounded-xl flex items-center gap-4 text-sm font-medium text-slate-700 overflow-x-auto';
+                legend.innerHTML = '';
+                
+                // Label
+                const label = document.createElement('div');
+                label.className = 'flex items-center gap-2 text-slate-900 uppercase tracking-wider text-xs font-bold whitespace-nowrap flex-shrink-0';
+                label.innerHTML = `
+                    <div class="p-1.5 bg-indigo-50 rounded-lg">
+                        <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    </div>
+                    ขั้นตอน:
+                `;
+                legend.appendChild(label);
+
+                const content = document.createElement('div');
+                content.className = 'flex items-center gap-3 flex-nowrap';
+                legend.appendChild(content);
+
+                // Helper for standard badges
+                const createBadge = (colorClass, text, iconHtml = '') => {
+                    return `
+                        <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm transition-transform hover:scale-105 flex-shrink-0">
+                            ${iconHtml ? iconHtml : `<div class="w-3 h-3 rounded-full ${colorClass} ring-2 ring-slate-50"></div>`}
+                            <span class="text-slate-600 font-medium text-xs md:text-sm whitespace-nowrap">${text}</span>
+                        </div>
+                    `;
+                };
+
+                // Helper for sequential steps
+                const createStep = (colorClass, text, number, isLast = false) => {
+                    return `
+                        <div class="flex items-center group flex-shrink-0">
+                            <div class="flex items-center gap-2 bg-white pl-2 pr-3 py-1.5 rounded-full border border-slate-200 shadow-sm transition-all hover:shadow-md hover:border-indigo-100">
+                                <div class="w-5 h-5 rounded-full ${colorClass} flex items-center justify-center text-[10px] font-bold text-white shadow-sm ring-1 ring-white">
+                                    ${number}
+                                </div>
+                                <span class="text-slate-700 font-medium text-xs md:text-sm whitespace-nowrap">${text}</span>
+                            </div>
+                            ${!isLast ? `
+                                <div class="mx-2 text-slate-300 group-hover:text-indigo-300 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                };
+
+                // Logic to populate content
                 if (currentView === 'qcSummary') {
-                     legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded bg-yellow-400"></div><span>อยู่ระหว่างตรวจสอบ</span></div>`;
-                     legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded bg-teal-500"></div><span>ผ่าน (>= 85)</span></div>`;
-                     legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded bg-rose-500"></div><span>ไม่ผ่าน (< 85)</span></div>`;
-                     legend.innerHTML += `<div class="flex items-center gap-2"><span class="font-bold text-lg">!</span><span>พบ Major Defect</span></div>`;
+                     content.innerHTML += createBadge('bg-yellow-400', 'อยู่ระหว่างตรวจสอบ');
+                     content.innerHTML += createBadge('bg-teal-500', 'ผ่าน (>= 85)');
+                     content.innerHTML += createBadge('bg-rose-500', 'ไม่ผ่าน (< 85)');
+                     content.innerHTML += createBadge('', 'พบ Major Defect', '<div class="w-4 h-4 flex items-center justify-center rounded-full bg-rose-100 text-rose-600 font-bold text-[10px] border border-rose-200">!</div>');
                      return;
                 }
                 
                 const categoryDef = taskDefinitions[currentCategory];
-                if (!categoryDef) return; // Guard against missing definition
+                if (!categoryDef) return;
 
                 if (categoryDef.hasDetailedView && currentDetailedView === 'detailed') {
                      categoryDef.tasks.forEach(task => {
-                        legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded ${task.color}"></div><span>${task.name}</span></div>`;
+                        content.innerHTML += createBadge(task.color, task.name);
                     });
-                    legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded bg-teal-500"></div><span>เสร็จสมบูรณ์ (100%)</span></div>`;
+                    content.innerHTML += createBadge('bg-emerald-500', 'เสร็จสมบูรณ์ (100%)');
                 } else if (categoryDef.type === 'inspection') {
-                    legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded bg-yellow-400"></div><span>อยู่ระหว่างตรวจสอบ</span></div>`;
-                    legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded bg-teal-500"></div><span>ผ่าน (>= 85)</span></div>`;
-                    legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded bg-rose-500"></div><span>ไม่ผ่าน (< 85)</span></div>`;
-                    legend.innerHTML += `<div class="flex items-center gap-2"><span class="font-bold text-lg">!</span><span>พบ Major Defect</span></div>`;
+                    content.innerHTML += createBadge('bg-yellow-400', 'อยู่ระหว่างตรวจสอบ');
+                    content.innerHTML += createBadge('bg-teal-500', 'ผ่าน (>= 85)');
+                    content.innerHTML += createBadge('bg-rose-500', 'ไม่ผ่าน (< 85)');
+                    content.innerHTML += createBadge('', 'พบ Major Defect', '<div class="w-4 h-4 flex items-center justify-center rounded-full bg-rose-100 text-rose-600 font-bold text-[10px] border border-rose-200">!</div>');
                 } else if (categoryDef.type === 'multi-progress') {
-                    legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded bg-sky-100"></div><span>เริ่มดำเนินการ (1-30%)</span></div>`;
-                    legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded bg-sky-300"></div><span>คืบหน้า (31-60%)</span></div>`;
-                    legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded bg-sky-500"></div><span>คืบหน้ามาก (61-99%)</span></div>`;
-                    legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded bg-teal-500"></div><span>เสร็จสมบูรณ์ (100%)</span></div>`;
-                    legend.innerHTML += `<div class="flex items-center gap-2"><span class="font-semibold text-xs border rounded px-1 bg-gray-200">ชื่อย่อ</span><span>แสดงงานย่อยที่เริ่มทำแล้ว</span></div>`;
+                    content.innerHTML += createBadge('bg-sky-100', 'เริ่มดำเนินการ (1-30%)');
+                    content.innerHTML += createBadge('bg-sky-300', 'คืบหน้า (31-60%)');
+                    content.innerHTML += createBadge('bg-sky-500', 'คืบหน้ามาก (61-99%)');
+                    content.innerHTML += createBadge('bg-emerald-500', 'เสร็จสมบูรณ์ (100%)');
+                    content.innerHTML += createBadge('', 'แสดงงานย่อยที่เริ่มทำแล้ว', '<div class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-300">ย่อ</div>');
                 } else {
-                    categoryDef.tasks.forEach(task => {
-                        legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded ${task.color}"></div><span>${task.name}</span></div>`;
+                    // Sequential flow
+                    categoryDef.tasks.forEach((task, index) => {
+                        content.innerHTML += createStep(task.color, task.name, index + 1);
                     });
-                    legend.innerHTML += `<div class="flex items-center gap-2"><div class="w-5 h-5 rounded bg-teal-500"></div><span>เสร็จสมบูรณ์</span></div>`;
+                    content.innerHTML += createStep('bg-emerald-500', 'เสร็จสมบูรณ์', categoryDef.tasks.length + 1, true);
                 }
             }
 
@@ -1838,8 +2120,7 @@
 
                 const progressView = document.getElementById('modal-progress-view');
                 progressView.classList.remove('hidden');
-                document.getElementById('modal-task-select').style.display = 'none';
-                document.querySelector('label[for="modal-task-select"]').style.display = 'none';
+                document.getElementById('modal-task-select-container').style.display = 'none';
                 document.getElementById('progress-input').value = progress;
                 
                 openModal('updateModal');
@@ -1858,8 +2139,7 @@
                 document.getElementById('modal-progress-view').classList.add('hidden');
                 document.getElementById('modal-inspection-view').classList.add('hidden');
                 document.getElementById('modal-multi-progress-view').classList.add('hidden');
-                document.getElementById('modal-task-select').style.display = 'block';
-                document.querySelector('label[for="modal-task-select"]').style.display = 'block';
+                document.getElementById('modal-task-select-container').style.display = 'block';
 
                 if (categoryDef.type === 'inspection') {
                     document.getElementById('modal-inspection-view').classList.remove('hidden');
@@ -1919,12 +2199,46 @@
                     const taskSelect = document.getElementById('modal-task-select');
                     const progressInput = document.getElementById('progress-input');
                     const isMultiSelect = selectedCells.size > 1;
-                    taskSelect.innerHTML = '';
-                    categoryTasks.forEach((task, index) => taskSelect.innerHTML += `<option value="${index}">${task.name}</option>`);
                     
+                    const taskButtonsContainer = document.getElementById('modal-task-buttons');
+                    
+                    const renderTaskButtons = (selectedIndex) => {
+                        taskButtonsContainer.innerHTML = '';
+                        categoryTasks.forEach((task, index) => {
+                            const isSelected = index === selectedIndex;
+                            const isPrevious = index < selectedIndex;
+                            
+                            let btnClass = "px-4 py-2 rounded-xl text-sm font-semibold transition-all border-2 flex items-center gap-2 ";
+                            if (isSelected) {
+                                btnClass += "bg-indigo-600 border-indigo-600 text-white shadow-md";
+                            } else if (isPrevious) {
+                                btnClass += "bg-emerald-50 border-emerald-500 text-emerald-700";
+                            } else {
+                                btnClass += "bg-white border-slate-200 text-slate-600 hover:border-indigo-300 hover:bg-slate-50";
+                            }
+                            
+                            const btn = document.createElement('button');
+                            btn.type = 'button';
+                            btn.className = btnClass;
+                            
+                            if (isPrevious) {
+                                btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>${task.name}`;
+                            } else {
+                                btn.textContent = task.name;
+                            }
+                            
+                            btn.onclick = () => {
+                                taskSelect.value = index;
+                                renderTaskButtons(index);
+                            };
+                            taskButtonsContainer.appendChild(btn);
+                        });
+                    };
+
                     if (isMultiSelect) {
                         taskSelect.value = 0;
                         progressInput.value = '';
+                        renderTaskButtons(0);
                     } else {
                         let taskToShowIndex = unitData.taskIndex || 0;
                         let progressToShow = unitData.progress || 0;
@@ -1934,6 +2248,7 @@
                         }
                         taskSelect.value = taskToShowIndex;
                         progressInput.value = progressToShow;
+                        renderTaskButtons(taskToShowIndex);
                     }
                 }
                 
@@ -3229,7 +3544,7 @@
                 const iconMap = {
                     well: `<svg class="w-5 h-5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>`,
                     concern: `<svg class="w-5 h-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.21 3.03-1.742 3.03H4.42c-1.532 0-2.492-1.696-1.742-3.03l5.58-9.92zM10 13a1 1 0 100-2 1 1 0 000 2zm-1-8a1 1 0 011-1h.008a1 1 0 011 1v3.008a1 1 0 01-1 1H9a1 1 0 01-1-1V5z" clip-rule="evenodd" /></svg>`,
-                    plan: `<svg class="w-5 h-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M7.5 3A4.5 4.5 0 003 7.5v6A4.5 4.5 0 007.5 18h5A4.5 4.5 0 0017 13.5v-6A4.5 4.5 0 0012.5 3h-5zM4 7.5A3.5 3.5 0 017.5 4h5A3.5 3.5 0 0116 7.5v6A3.5 3.5 0 0112.5 17h-5A3.5 3.5 0 014 13.5v-6zM8 8a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1zm0 4a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" /></svg>`
+                    plan: `<svg class="w-5 h-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M11.983 1.904a.75.75 0 00-1.292-.748L4.319 9.923a.75.75 0 000 .748l6.372 8.767a.75.75 0 001.292-.748L6.47 10.297l5.513-8.393z" /></svg>`
                 }
                 const createList = (items, icon) => (items || []).map(item => `<li class="flex items-start gap-3"><span class="flex-shrink-0 mt-1">${icon}</span><p class="text-gray-700">${item}</p></li>`).join('');
 
@@ -3362,20 +3677,47 @@
                 selectedCells.clear();
             }
 
+            function filterTasks(term) {
+                term = term.toLowerCase();
+                const groups = document.querySelectorAll('#task-category-buttons > div');
+                groups.forEach(group => {
+                    let hasVisibleBtn = false;
+                    const btns = group.querySelectorAll('button');
+                    btns.forEach(btn => {
+                        const text = btn.textContent.toLowerCase();
+                        if (text.includes(term)) {
+                            btn.style.display = '';
+                            hasVisibleBtn = true;
+                        } else {
+                            btn.style.display = 'none';
+                        }
+                    });
+                    group.style.display = hasVisibleBtn ? '' : 'none';
+                });
+            }
+
             function bindEventListeners() {
                 let clearDataConfirmationStep = 0;
                 
                 // Splash Screen Nav
                 document.getElementById('nav-residential').addEventListener('click', () => enterAppView('residential'));
                 document.getElementById('nav-common-area').addEventListener('click', () => enterAppView('common'));
-                document.getElementById('nav-quick-update').addEventListener('click', enterQuickUpdateMode);
                 
                 // Main App Nav
                 document.getElementById('home-btn').addEventListener('click', backToSplash);
                 document.getElementById('quick-update-home-btn').addEventListener('click', backToSplash);
 
                 document.getElementById('closeModalBtn').addEventListener('click', () => closeModal('updateModal'));
+                document.getElementById('closeModalIconBtn').addEventListener('click', () => closeModal('updateModal'));
                 document.getElementById('saveProgressBtn').addEventListener('click', saveProgress);
+                
+                // Quick Progress Buttons
+                document.querySelectorAll('.quick-progress-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const val = e.target.getAttribute('data-value');
+                        document.getElementById('progress-input').value = val;
+                    });
+                });
                 
                 document.getElementById('clearDataBtn').addEventListener('click', (e) => {
                     const CONFIRM_COUNT = 5;
@@ -3441,12 +3783,11 @@
                 document.getElementById('closeReportModalBtn').addEventListener('click', () => closeModal('reportModal'));
                 document.getElementById('notificationOkBtn').addEventListener('click', () => closeModal('notificationModal'));
 
-                
-                document.getElementById('task-category').addEventListener('change', (e) => {
-                    currentCategory = e.target.value;
-                    currentDetailedView = 'summary';
-                    renderTable();
+                document.getElementById('task-search-input').addEventListener('input', (e) => {
+                    filterTasks(e.target.value);
                 });
+
+                // Removed dropdown change listener as it's now handled by buttons
 
                 const viewResidentialBtn = document.getElementById('view-residential-btn');
                 const viewQCSummaryBtn = document.getElementById('view-qc-summary-btn');
@@ -3577,7 +3918,7 @@
             }
 
             function init() {
-                setupCategoryDropdown();
+                setupCategoryButtons();
                 bindEventListeners();
                 initializeAI(); // Initialize AI, but don't block app load if it fails.
                 if (initializeSupabase()) {
@@ -3588,7 +3929,6 @@
             init();
         });
     </script>
+<script type="module" src="/index.tsx"></script>
 </body>
 </html>
-
-
